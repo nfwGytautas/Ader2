@@ -1,0 +1,5 @@
+C:\dev\Ader-Engine2\Ader-Engine2\bin\Debug-windows-x86_64\Ader2_SHARP\Ader2_SHARP.dll
+C:\dev\Ader-Engine2\Ader-Engine2\bin\Debug-windows-x86_64\Ader2_SHARP\Ader2_SHARP.pdb
+C:\dev\Ader-Engine2\Ader-Engine2\bin-int\Debug-windows-x86_64\Ader2_SHARP\Ader2_SHARP.csprojAssemblyReference.cache
+C:\dev\Ader-Engine2\Ader-Engine2\bin-int\Debug-windows-x86_64\Ader2_SHARP\Ader2_SHARP.dll
+C:\dev\Ader-Engine2\Ader-Engine2\bin-int\Debug-windows-x86_64\Ader2_SHARP\Ader2_SHARP.pdb
