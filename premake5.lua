@@ -10,3 +10,4 @@ workspace "Ader2"
 
 require "build/cpp"
 require "build/csharp"
+require "build/gamecode"

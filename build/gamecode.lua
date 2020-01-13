@@ -1,14 +1,16 @@
 local engine_paths = require "common"
 
-project "Ader2_SHARP"
-	location (engine_paths.project .. "/Ader2_SHARP")
+project "GameCode"
+	location (engine_paths.project .. "/GameCode")
 	kind "SharedLib"
 	language "C#"
 
 	debugdir (engine_paths.out_target)
 
-	targetdir (engine_paths.out_target)
+	targetdir (engine_paths.out_target .. "/logic")
 	objdir (engine_paths.out_object)
+
+	flags { "NoCopyLocal" }
 
 	files
 	{
@@ -17,6 +19,7 @@ project "Ader2_SHARP"
 
 	links
 	{
+		"Ader2_SHARP",
 		"System",
 	}
 

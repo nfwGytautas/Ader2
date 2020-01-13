@@ -1,68 +1,90 @@
-outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+local engine_paths = require "common"
 
 project "Ader2_CPP"
-	location "../Ader2_CPP"
+	location (engine_paths.project .. "/Ader2_CPP")
 	kind "ConsoleApp"
 	language "C++"	
 	cppdialect "C++17"
 	staticruntime "on"
 
-	debugdir ("../bin/" .. outputdir)
+	debugdir (engine_paths.out_target)
 
-	targetdir ("../bin/" .. outputdir)
-	objdir ("../bin-int/" .. outputdir)
+	targetdir (engine_paths.out_target)
+	objdir (engine_paths.out_object)
 
 	files
 	{
-		"../%{prj.name}/src/**.h",
-		"../%{prj.name}/src/**.cpp"
+		"%{prj.location}/src/**.h",
+		"%{prj.location}/src/**.cpp"
 	}
 
 	includedirs
 	{
 		-- Project files
-		"../%{prj.name}/src",
+		"/%{prj.location}/src",
 
 		-- Mono
-		"../libraries/mono/include/mono-2.0",
+		engine_paths.lib["mono"]["include"],
 
 		-- spdlog
-		"../libraries/spdlog/include/",
+		engine_paths.lib["spdlog"]["include"],
 
+		-- GLFW
+		engine_paths.lib["GLFW"]["include"],
+
+		-- Glad
+		engine_paths.lib["Glad"]["include"],
 	}
 
 	libdirs
 	{
 		-- Mono
-		"../libraries/mono/lib/",
+		engine_paths.lib["mono"]["lib"],
 
 		-- spdlog
-		"../libraries/spdlog/lib/",
+		engine_paths.lib["spdlog"]["lib"],
+
+		-- GLFW
+		engine_paths.lib["GLFW"]["lib"],
+
+		-- Glad
+		engine_paths.lib["Glad"]["lib"],
 	}
 
 	links
 	{
 		-- Mono
-		"mono-2.0-sgen.lib",
+		engine_paths.lib["mono"]["dll"],
 
 		-- spdlog
-		"r_spdlog.lib",
+		engine_paths.lib["spdlog"]["dll"],
+
+		-- GLFW
+		engine_paths.lib["GLFW"]["dll"],
+
+		-- Glad
+		engine_paths.lib["Glad"]["dll"],
 	}
 
 	postbuildcommands 
 	{
 		-- Mono dll
-		("{COPY} ../libraries/mono/lib/mono-2.0-sgen.dll ../bin/" .. outputdir),
+		("{COPY} " .. engine_paths.lib["mono"]["copy_dll"] .. " ../" .. engine_paths.out_target .. "/"),
 
 		-- Mono etc folder
-		("{COPY} ../libraries/mono/etc ../bin/" .. outputdir.. "/mono/etc"),
+		("{COPY} " .. engine_paths.lib["mono"]["copy_etc"] .. " ../" .. engine_paths.out_target .. "/mono/etc"),
 
 		-- Mono lib folder
-		("{COPY} ../libraries/mono/lib ../bin/" .. outputdir .. "/mono/lib"),
+		("{COPY} " .. engine_paths.lib["mono"]["copy_lib"] .. " ../" .. engine_paths.out_target .. "/mono/lib"),
 	}
 
 	filter "system:windows"
 		systemversion "latest"
+
+		links
+		{
+			"opengl32.lib",
+		}
 
 		defines
 		{

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="CommonTypes">
+      <UniqueIdentifier>{6301922B-CFB6-0A21-58AB-04F8C45F0125}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enums">
+      <UniqueIdentifier>{CDEC1D0D-3901-46BE-0283-E91D6E5642EF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ModuleSystem">
+      <UniqueIdentifier>{F05AF38A-DCBD-822F-8543-BBE571854EB2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules">
+      <UniqueIdentifier>{DE144435-4AF4-C2D0-530C-4EA7BF6A2932}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonoWrap">
+      <UniqueIdentifier>{5865A2F4-4432-FDFF-6D4B-EBA75977328E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonoWrap\GLUE">
+      <UniqueIdentifier>{7439AA93-E0F9-25CA-A934-6F4715B46AA6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenGLModules">
+      <UniqueIdentifier>{C3FE7853-2FBF-F489-F8F9-3D0764793966}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{594615A9-C525-9444-CE3D-1F1B3A9CFAA5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\AderEngine.h" />
+    <ClInclude Include="src\CommonTypes\States.h">
+      <Filter>CommonTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CommonTypes\reference.h">
+      <Filter>CommonTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CommonTypes\relay_ptr.h">
+      <Filter>CommonTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Defs.h" />
+    <ClInclude Include="src\Enums\Messages.h">
+      <Filter>Enums</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ModuleSystem\ModuleSystem.h">
+      <Filter>ModuleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\InputInterface.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MonoWrap\GLUE\AderEngineSharp.h">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MonoWrap\GLUE\AderScript.h">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MonoWrap\MonoManager.h">
+      <Filter>MonoWrap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGLModules\GLContext.h">
+      <Filter>OpenGLModules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGLModules\GLWindow.h">
+      <Filter>OpenGLModules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Log.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Timer.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Enums\Input.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\AderEngine.cpp" />
+    <ClCompile Include="src\ModuleSystem\ModuleSystem.cpp">
+      <Filter>ModuleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\InputInterface.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonoWrap\GLUE\AderEngineSharp.cpp">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonoWrap\GLUE\AderScript.cpp">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonoWrap\MonoManager.cpp">
+      <Filter>MonoWrap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGLModules\GLContext.cpp">
+      <Filter>OpenGLModules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGLModules\GLWindow.cpp">
+      <Filter>OpenGLModules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Log.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Timer.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+</Project>
