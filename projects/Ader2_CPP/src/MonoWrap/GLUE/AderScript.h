@@ -20,6 +20,7 @@ struct AderScriptBase
     Memory::reference<SharpMethod> Update;
 };
 
+
 /**
  * C++ representation of any implementation of AderScript.cs
  */

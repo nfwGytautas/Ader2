@@ -38,11 +38,12 @@ class MonoManager;
 class SharpDomain;
 class SharpAssembly;
 class SharpClass;
+class SharpAttribute;
 class SharpMethod;
 class SharpProperty;
 class SharpField;
 class SharpException;
-class SharpMarshal;
+class SharpUtility;
 
 // AderScript C++ interface
 #include "GLUE/AderScript.h"
@@ -50,10 +51,16 @@ class SharpMarshal;
 // AderEngine C++ interface
 #include "GLUE/AderEngineSharp.h"
 
+// AderScene C++ interface
+#include "GLUE/AderScene.h"
+
 struct AderScriptBase;
 class AderScript;
 
 struct AderEngineSharp;
+
+struct AderSceneBase;
+class AderScene;
 
 /**
  * One of the main Ader modules.
@@ -64,13 +71,16 @@ struct AderEngineSharp;
  *  - Setup
  *  - ScriptUpdate
  *  - LoadAssemblies
- *  - CloseAssemblies
  *  - ReloadAssemblies
  *  - LoadScripts
  *  - ScriptUpdate
  *  - InitScripts
  *  - WndStateCreated
  *  - KeyStateCreated
+ *  - LoadAderScenes
+ *
+ * Posts:
+ *  - TransmitScenes
  */
 class MonoManager : public Module
 {
@@ -90,11 +100,6 @@ public:
      * @param callback Callback to map to
      */
     void addInternalCall(const std::string& name, const void* callback);
-
-    /**
-     * Returns true if the manager is closed, false otherwise
-     */
-    bool isClosed() const;
 
     // Inherited via Module
     virtual bool canShutdown() override;
@@ -119,13 +124,6 @@ private:
      * @return 0 if there were no errors, otherwise error code
      */
     int loadAssemblies(const std::string& assemblyDirectory);
-
-    /**
-     * Close all loaded game assemblies
-     *
-     * @return 0 if there were no errors, otherwise error code
-     */
-    int closeAssemblies();
 
     /**
      * Reload all loaded game assemblies
@@ -175,6 +173,18 @@ private:
      * -KeyboardState -> _keyState
      */
     void setFields();
+
+    /**
+     * Find and create all objects that inherit Scene object
+     *
+     * @return 0 if there were no errors, otherwise error code
+     */
+    int loadAderScenes();
+
+    /**
+     * Links C++ functions to C# methods
+     */
+    void addInternalCalls();
 private:
     /**
      * Due to the nature of C APIs class methods cannot be passed as callbacks
@@ -199,18 +209,21 @@ private:
 
     /// Pointer to ader script base interface
     AderScriptBase* m_pAderScriptBase = nullptr;
-    
+
+    /// Pointer to ader scene base interface
+    AderSceneBase* m_pAderSceneBase = nullptr;
+
     /// Pointer to ader engine interface
     AderEngineSharp* m_pAderEngine = nullptr;
 
     /// Vector of all loaded scripts
     std::vector<Memory::reference<AderScript>> m_scripts;
 
+    /// Vector of all loaded scenes
+    std::vector<Memory::reference<AderScene>> m_scenes;
+
     /// Vector containing all requests to load assemblies
     std::vector<std::string> m_loadDirs;
-
-    /// Variable to keep track if assemblies been closed or not
-    bool m_closed = false;
 };
 
 
@@ -325,6 +338,8 @@ public:
      */
     SharpAssembly(MonoDomain* pDomain, const std::string& folder, const std::string& name);
 
+    ~SharpAssembly();
+
     /**
      * Returns a class that is from the specified namespace and with the specified name
      * 
@@ -381,6 +396,7 @@ private:
  *  -A way to check if a specific class is base of this class
  *  -A way to create a field from this class
  *  -A way to get a property from this class
+ *  -A way to get all custom attributes of the class
  */
 class SharpClass
 {
@@ -482,6 +498,13 @@ public:
     Memory::reference<SharpProperty> getProperty(const std::string& name);
 
     /**
+     * Returns references of the class properties
+     *
+     * @return Vector containing references to all class properties
+     */
+    std::vector<Memory::reference<SharpProperty>> getAllProperties();
+
+    /**
      * Returns a reference to the SharpField with the specified name and parameter combination.
      * This is the main way to create a SharpField and should be preferred.
      *
@@ -491,6 +514,13 @@ public:
      *         invalid otherwise
      */
     Memory::reference<SharpField> getField(const std::string& name);
+
+    /**
+     * Gets all attributes of this class
+     *
+     * @return Vector containing all attributes
+     */
+    std::vector<Memory::reference<SharpAttribute>> getAttributes();
 
     /**
      * Creates a MonoObject pointer from this class
@@ -633,6 +663,11 @@ public:
     SharpProperty(MonoClass* pClass, const std::string& name);
 
     /**
+     * Get the name of this property
+     */
+    const std::string& getName();
+
+    /**
      * Get the value of the property for the specified object
      *
      * @param pInstance MonoObject pointer
@@ -673,10 +708,53 @@ private:
 
     /// Set method
     Memory::reference<SharpMethod> m_setMethod;
-
-    /// Name of the property
-    std::string m_fullName = "";
 };
+
+
+/**
+ * Wrapper around mono class attributes
+ * This wrapper provides:
+ *  -A way to get name of the attribute
+ *  -A way to get data of the attribute
+ *  -A way to get the class of the attribute
+ */
+class SharpAttribute
+{
+public:
+    /**
+     * Create an attribute from the specified class and object
+     *
+     * @param klass Reference to the attribute class
+     * @param pObject Pointer to the attribute instance
+     */
+    SharpAttribute(Memory::reference<SharpClass> klass, MonoObject* pObject);
+
+    /**
+     * Get the value of the specified attribute property
+     *
+     * @param prop Name of the property
+     *
+     * @return The property value, use SharpMarshal to get C++ type
+     */
+    MonoObject* getValue(const std::string& prop);
+
+    /**
+     * Returns the reference to the sharp class of the attribute
+     */
+    Memory::reference<SharpClass> getClass();
+private:
+    /// Reference of the attribute class
+    Memory::reference<SharpClass> m_class;
+
+    /// Instance of the attribute
+    MonoObject* m_pInstance;
+
+    /// Attribute property map
+    std::unordered_map<
+        std::string, 
+        Memory::reference<SharpProperty>> m_properties;
+};
+
 
 /**
  * Wrapper around MonoClassField
@@ -784,12 +862,28 @@ private:
  * This class provides ways to marshal MonoObject pointers
  * that are retrieved from invoking SharpMethods and make
  * them into C++ types and vice versa.
+ * Also other helper methods.
  */
-class SharpMarshal
+class SharpUtility
 {
 public:
     /**
      * Convert the specified MonoObject into a string and return it
      */
     static std::string toString(MonoObject* pObject);
+
+    /**
+     * Create a method signature from namespace, class, method, and signature
+     *
+     * @param nSpace Namespace of the class method separated in dots e.g. nSpace1.nSpace2
+     * @param klass Class of the method
+     * @param method Name of the method
+     * @param params Method parameters in parentheses e.g. (int, double)
+     * @param isStatic Is the method static or not, default false
+     */
+    static std::string methodSignature(const std::string& nSpace,
+                                       const std::string& klass,
+                                       const std::string& method,
+                                       const std::string& params,
+                                       bool isStatic = false);
 };

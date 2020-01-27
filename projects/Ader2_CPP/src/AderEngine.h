@@ -21,6 +21,9 @@
 // Input interface module
 #include "Modules/InputInterface.h"
 
+// Scene manager module
+#include "Modules/SceneManager.h"
+
 
 /**
  * The message bus that is used by the AderEngine
@@ -86,6 +89,13 @@ public:
      */
     Memory::reference<InputInterface> input();
 
+    /**
+     * Get the reference to the scene manager module
+     *
+     * @return Memory::reference<SceneManager> of the engine's scene manager module
+     */
+    Memory::reference<SceneManager> scenes();
+
 	// Inherited via ModuleSystem
 	virtual std::vector<MessageBus::ModuleEntry> getModules() override;
 	virtual MessageBus* getMBImplementation() override;
@@ -95,4 +105,5 @@ private:
     Memory::reference<GLWindow> m_window;
     Memory::reference<GLContext> m_glContext;
     Memory::reference<InputInterface> m_inputInterface;
+    Memory::reference<SceneManager> m_sceneManager;
 };

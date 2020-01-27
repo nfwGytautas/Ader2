@@ -6,6 +6,9 @@
 // For browsing directories
 #include <filesystem>
 
+// For reading assembly to memory
+#include <fstream>
+
 // Engine messages
 #include "Enums/Messages.h"
 
@@ -19,6 +22,7 @@
 #include <mono/metadata/attrdefs.h>
 #include <mono/metadata/mono-gc.h>
 #include <mono/metadata/threads.h>
+#include <mono/metadata/tokentype.h>
 
 #ifdef ADER_MACRO_DEBUG
 #include <mono/utils/mono-logger.h>
@@ -29,16 +33,23 @@
 #define ASSEMBLY_NAME "Ader2_SHARP.dll"
 #define SCRIPT_NAMESPACE "Ader2"
 #define ENGINE_NAMESPACE "Ader2.Core"
+#define SCENE_NAMESPACE "Ader2"
 #define SCRIPT_CLASS_NAME "AderScript"
 #define ENGINE_CLASS_NAME "AderEngine"
+#define SCENE_CLASS_NAME "AderScene"
 #define SCRIPT_CLASS_FILTER(x) (x == "Internal" || x == "<Module>")
 
 #include <iostream>
 
+#include "MonoWrap/GLUE/InternalCalls.h"
+
 MonoManager* MonoManager::ms_pStaticThis = nullptr;
 
 MonoManager::MonoManager()
-	: m_pAderScriptBase(new AderScriptBase()), m_pAderEngine(new AderEngineSharp())
+	: 
+	m_pAderScriptBase(new AderScriptBase()), 
+	m_pAderEngine(new AderEngineSharp()),
+	m_pAderSceneBase(new AderSceneBase())
 {
 	ms_pStaticThis = this;
 }
@@ -54,6 +65,11 @@ MonoManager::~MonoManager()
 	{
 		delete m_pAderEngine;
 	}
+
+	if (m_pAderSceneBase)
+	{
+		delete m_pAderSceneBase;
+	}
 }
 
 Memory::reference<SharpDomain> MonoManager::getDomain()
@@ -65,11 +81,6 @@ void MonoManager::addInternalCall(const std::string& name, const void* callback)
 {
 	// Add a mono internal call
 	mono_add_internal_call(name.c_str(), callback);
-}
-
-bool MonoManager::isClosed() const
-{
-	return m_closed;
 }
 
 bool MonoManager::canShutdown()
@@ -95,8 +106,6 @@ int MonoManager::onMessage(MessageBus::MessageType msg, MessageBus::DataType pDa
 		return setup();
 	case Messages::msg_LoadAssemblies:
 		return loadAssemblies(*static_cast<const std::string*>(pData));
-	case Messages::msg_CloseAssemblies:
-		return closeAssemblies();
 	case Messages::msg_ReloadAssemblies:
 		return reloadAssemblies();
 	case Messages::msg_LoadScripts:
@@ -107,6 +116,8 @@ int MonoManager::onMessage(MessageBus::MessageType msg, MessageBus::DataType pDa
 		return updateScripts();
 	case Messages::msg_StateBundleCreated:
 		return setStateBundle(pData);
+	case Messages::msg_LoadAderScenes:
+		return loadAderScenes();
 	}
 
 	return 0;
@@ -157,6 +168,9 @@ int MonoManager::setup()
 	// Initialize engine
 	initEngine();
 
+	// Add internal calls
+	addInternalCalls();
+
 	return 0;
 }
 
@@ -189,35 +203,21 @@ int MonoManager::loadAssemblies(const std::string& assemblyDirectory)
 	return 0;
 }
 
-int MonoManager::closeAssemblies()
+int MonoManager::reloadAssemblies()
 {
-	if (m_closed)
-	{
-		LOG_WARN("Trying to close an already closed manager!");
-		return 1;
-	}
+	int result = 0;
 
+	// Dereference the engine assembly so it can be cleaned up
 	m_engineAssembly = nullptr;
 
 	// Clear all scripts
 	m_scripts.clear();
 
+	// Clear all scenes
+	m_scenes.clear();
+
 	// Unload the domain
 	m_appDomain->unload();
-
-	// Set closed flag
-	m_closed = true;
-
-	return 0;
-}
-
-int MonoManager::reloadAssemblies()
-{
-	if (!m_closed)
-	{
-		LOG_WARN("Trying to reload assemblies before closing them!");
-		return 1;
-	}
 
 	// Initialize engine
 	initEngine();
@@ -228,8 +228,6 @@ int MonoManager::reloadAssemblies()
 		// Set fields
 		setFields();
 	}
-
-	int result = 0;
 
 	// Iterate over all load directories
 	for (const std::string& dir : m_loadDirs)
@@ -245,6 +243,9 @@ int MonoManager::reloadAssemblies()
 
 	// Load all scripts
 	result = loadScripts();
+
+	// Load all scenes
+	result = loadAderScenes();
 
 	// Invoke init on all scripts
 	result = initScripts();
@@ -262,9 +263,6 @@ int MonoManager::loadScripts()
 		LOG_DEBUG("Loaded '{0}' script", klass->getName());
 	}
 
-	// Set closed flag
-	m_closed = false;
-
 	// Construct all classes
 	for (const Memory::reference<AderScript>& script : m_scripts)
 	{
@@ -276,13 +274,6 @@ int MonoManager::loadScripts()
 
 int MonoManager::initScripts()
 {
-	// Return if the manager is closed
-	if (m_closed)
-	{
-		LOG_WARN("Trying to call script objects on closed manager!");
-		return 1;
-	}
-
 	// Invoke all updates
 	for (const Memory::reference<AderScript>& script : m_scripts)
 	{
@@ -302,13 +293,6 @@ int MonoManager::initScripts()
 
 int MonoManager::updateScripts()
 {
-	// Return if the manager is closed
-	if (m_closed)
-	{
-		LOG_WARN("Trying to call script objects on closed manager!");
-		return 1;
-	}
-
 	// Invoke all updates
 	for (const Memory::reference<AderScript>& script : m_scripts)
 	{
@@ -339,7 +323,7 @@ int MonoManager::setStateBundle(void* pState)
 void MonoManager::initEngine()
 {
 	// Create domain
-	m_appDomain = new SharpDomain("Domain" + m_appDomainIter);
+	m_appDomain = new SharpDomain("Domain" + m_appDomainIter++);
 
 	// Load the engine assembly
 	m_engineAssembly = m_appDomain->loadAssembly("", ASSEMBLY_NAME);
@@ -354,20 +338,51 @@ void MonoManager::initEngine()
 	m_pAderScriptBase->Constructor = m_pAderScriptBase->Klass->getMethod(".ctor", "", false);
 	m_pAderScriptBase->Init = m_pAderScriptBase->Klass->getMethod("Init", "", false);
 	m_pAderScriptBase->Update = m_pAderScriptBase->Klass->getMethod("Update", "", false);
+
+	// Assign scene base variables
+	m_pAderSceneBase->Klass = m_engineAssembly->getClass(SCENE_NAMESPACE, SCENE_CLASS_NAME);
+	m_pAderSceneBase->Constructor = m_pAderSceneBase->Klass->getMethod(".ctor", "", false);
+	m_pAderSceneBase->LoadAssets = m_pAderSceneBase->Klass->getMethod("LoadAssets", "", false);
+	m_pAderSceneBase->_CInstance = m_pAderSceneBase->Klass->getField("_CInstance");
 }
 
 void MonoManager::setFields()
 {
-	// Arguments array
-	void* args[1];
-
 	// Window state
-	args[0] = &m_pStates->WndState;
-	m_pAderEngine->FieldWndState->setValue(nullptr, args);
+	m_pAderEngine->FieldWndState->setValue(nullptr, &m_pStates->WndState);
 
 	// Key state
-	args[0] = &m_pStates->KeyState;
-	m_pAderEngine->FieldKeyState->setValue(nullptr, args);
+	m_pAderEngine->FieldKeyState->setValue(nullptr, &m_pStates->KeyState);
+}
+
+int MonoManager::loadAderScenes()
+{
+	// Iterate over all assembly classes that inherit AderScript
+	for (const Memory::reference<SharpClass>& klass : m_appDomain->getClassInherits(m_pAderSceneBase->Klass))
+	{
+		// Push back the new script
+		m_scenes.push_back(new AderScene(m_pAderSceneBase, klass));
+		LOG_DEBUG("Loaded '{0}' scene", klass->getName());
+	}
+
+	// Construct all classes
+	for (const Memory::reference<AderScene>& scene : m_scenes)
+	{
+		scene->invokeConstruct();
+	}
+
+	// Transmit scenes to the SceneManager
+	this->postMessage(Messages::msg_TransmitScenes, &m_scenes);
+
+	// Load the scene
+	this->postMessage(Messages::msg_LoadCurrentScene);
+
+	return 0;
+}
+
+void MonoManager::addInternalCalls()
+{
+	AderInternals::addInternals();
 }
 
 SharpDomain::SharpDomain(const std::string& name)
@@ -510,6 +525,8 @@ SharpAssembly::SharpAssembly(MonoDomain* pDomain, const std::string& folder, con
 		path = folder + "/" + name;
 	}
 
+	// For release builds we load it as 
+#ifdef ADER_MACRO_RELEASE
 	// Try to load the assembly
 	m_pAssembly = mono_domain_assembly_open(m_pDomain, path.c_str());
 
@@ -529,6 +546,48 @@ SharpAssembly::SharpAssembly(MonoDomain* pDomain, const std::string& folder, con
 		LOG_WARN("'{0}' image could not be created!", path);
 		return;
 	}
+#else
+	// Else we read the entire assembly to memory this doesn't lock the file
+	// and allows for easy reloading
+
+	// Open the file and get the last position
+	std::ifstream ifs(path, std::ios::binary | std::ios::ate);
+	std::ifstream::pos_type pos = ifs.tellg();
+
+	// Initialize vector buffer
+	std::vector<char> assemblyContents(pos);
+
+	// Seek start and copy contents to vector
+	ifs.seekg(0, std::ios::beg);
+	ifs.read(assemblyContents.data(), pos);
+
+	// Create image
+	MonoImageOpenStatus status;
+	m_pImage = mono_image_open_from_data_with_name(assemblyContents.data(), assemblyContents.size(), 1, &status,
+		0, path.c_str());
+
+	if (status != MONO_IMAGE_OK || m_pImage == nullptr)
+	{
+		LOG_WARN("'{0}' image could not be created!", path);
+		return;
+	}
+
+	// load the assembly
+	m_pAssembly = mono_assembly_load_from_full(m_pImage, path.c_str(), &status, false);
+	if (status != MONO_IMAGE_OK || m_pAssembly == nullptr)
+	{
+		mono_image_close(m_pImage);
+		LOG_WARN("'{0}' could not be loaded!", path);
+		return;
+	}
+#endif
+}
+
+SharpAssembly::~SharpAssembly()
+{
+#ifndef ADER_MACRO_RELEASE
+	mono_image_close(m_pImage);
+#endif
 }
 
 Memory::reference<SharpClass> SharpAssembly::getClass(const std::string& nSpace, const std::string& name) const
@@ -552,31 +611,21 @@ std::vector<Memory::reference<SharpClass>> SharpAssembly::getAllClasses() const
 	// Vector that will contain all found classes
 	std::vector<Memory::reference<SharpClass>> foundClasses;
 
-	// Get meta table info
-	const MonoTableInfo* table_info = mono_image_get_table_info(m_pImage, MONO_TABLE_TYPEDEF);
+	// Get the number of rows in the metadata table
+	int numRows = mono_image_get_table_rows(m_pImage, MONO_TABLE_TYPEDEF);
 
-	// Get the amount of rows in the table
-	int rows = mono_table_info_get_rows(table_info);
-
-	// Iterate over each row
-	for (int i = 0; i < rows; i++)
+	for (int i = 0; i < numRows; i++) // Skip Module
 	{
-		uint32_t cols[MONO_TYPEDEF_SIZE];
+		// Get class
+		MonoClass* monoClass = mono_class_get(m_pImage, (i + 1) | MONO_TOKEN_TYPE_DEF);
 
-		// Decode values
-		mono_metadata_decode_row(table_info, i, cols, MONO_TYPEDEF_SIZE);
-
-		// Get the name of the class
-		std::string name = mono_metadata_string_heap(m_pImage, cols[MONO_TYPEDEF_NAME]);
-
-		// Get the namespace of the class
-		std::string name_space = mono_metadata_string_heap(m_pImage, cols[MONO_TYPEDEF_NAMESPACE]);
-
-		if (!SCRIPT_CLASS_FILTER(name))
+		// Check if the class is found
+		if (monoClass != nullptr)
 		{
-			Memory::reference<SharpClass> klass = new SharpClass(m_pDomain, m_pImage, name_space, name);
+			Memory::reference<SharpClass> klass = new SharpClass(m_pDomain, m_pImage, monoClass);
 
-			if (klass->loaded())
+			// Filter classes
+			if (!SCRIPT_CLASS_FILTER(klass->getName()))
 			{
 				foundClasses.push_back(klass);
 			}
@@ -701,9 +750,65 @@ Memory::reference<SharpProperty> SharpClass::getProperty(const std::string& name
 	return Memory::reference<SharpProperty>(new SharpProperty(m_pClass, name));
 }
 
+std::vector<Memory::reference<SharpProperty>> SharpClass::getAllProperties()
+{
+	// All properties
+	std::vector<Memory::reference<SharpProperty>> properties;
+
+	// Iterate over properties
+	void* iter = nullptr;
+	MonoProperty* itProperty = mono_class_get_properties(m_pClass, &iter);
+
+	while (itProperty != nullptr)
+	{
+		// Add property and iterate to the next one
+		properties.push_back(new SharpProperty(itProperty));
+		itProperty = mono_class_get_properties(m_pClass, &iter);
+	}
+
+	return properties;
+}
+
 Memory::reference<SharpField> SharpClass::getField(const std::string& name)
 {
 	return Memory::reference<SharpField>(new SharpField(m_pDomain, mono_class_get_field_from_name(m_pClass, name.c_str())));
+}
+
+std::vector<Memory::reference<SharpAttribute>> SharpClass::getAttributes()
+{
+	// All attributes
+	std::vector<Memory::reference<SharpAttribute>> attributes;
+
+	// Get attributes
+	MonoCustomAttrInfo* attrInfo = mono_custom_attrs_from_class(m_pClass);
+
+	// Check if there are any attributes
+	if (attrInfo == nullptr)
+	{
+		return attributes;
+	}
+
+	// Iterate over attributes
+	for (int i = 0; i < attrInfo->num_attrs; i++)
+	{
+		// Get attribute class
+		MonoClass* attrClass = mono_method_get_class(attrInfo->attrs[i].ctor);
+
+		// Get instance
+		MonoObject* attrInstance = mono_custom_attrs_get_attr(attrInfo, m_pClass);
+
+		// Add attribute
+		attributes.push_back(
+			new SharpAttribute(
+				new SharpClass(m_pDomain, m_pImage, attrClass), 
+				attrInstance));
+	}
+
+	// Free memory
+	mono_custom_attrs_free(attrInfo);
+
+	// Return the attributes
+	return attributes;
 }
 
 MonoObject* SharpClass::createInstance()
@@ -813,6 +918,11 @@ SharpProperty::SharpProperty(MonoClass* pClass, const std::string& name)
 {
 }
 
+const std::string& SharpProperty::getName()
+{
+	return mono_property_get_name(m_pProperty);
+}
+
 MonoObject* SharpProperty::getValue(MonoObject* pInstance)
 {
 	ADER_ASSERT(m_getMethod.valid(), "Trying to use invalid property method");
@@ -840,6 +950,30 @@ void* SharpProperty::getSetThunk()
 bool SharpProperty::loaded()
 {
 	return m_pProperty != nullptr;
+}
+
+SharpAttribute::SharpAttribute(Memory::reference<SharpClass> klass, MonoObject* pObject)
+	: m_class(klass), m_pInstance(pObject)
+{
+	for (Memory::reference<SharpProperty> prop : m_class->getAllProperties())
+	{
+		m_properties[prop->getName()] = prop;
+	}
+}
+
+MonoObject* SharpAttribute::getValue(const std::string& prop)
+{
+	if (m_properties.find(prop) != m_properties.end())
+	{
+		return m_properties[prop]->getValue(m_pInstance);
+	}
+
+	return nullptr;
+}
+
+Memory::reference<SharpClass> SharpAttribute::getClass()
+{
+	return m_class;
 }
 
 SharpField::SharpField(MonoDomain* pDomain, MonoClassField* pField)
@@ -881,14 +1015,17 @@ void SharpField::getValue(MonoObject* pInstance, void* value)
 
 void SharpField::setValue(MonoObject* pInstance, void* value)
 {
+	void* args[1];
+	args[0] = value;
+
 	// Check if field is static and set value accordingly
 	if (m_isStatic)
 	{
-		mono_field_static_set_value(m_pVTable, m_pField, value);
+		mono_field_static_set_value(m_pVTable, m_pField, args);
 	}
 	else
 	{
-		mono_field_set_value(pInstance, m_pField, value);
+		mono_field_set_value(pInstance, m_pField, args);
 	}
 }
 
@@ -933,8 +1070,8 @@ void SharpException::getValues(MonoObject* pException)
 		MonoObject* pStackTrace = stackTraceProperty.getValue(pException);
 
 		// Convert to C++ types
-		m_msg = SharpMarshal::toString(pMessage);
-		m_stackTrace = SharpMarshal::toString(pStackTrace);
+		m_msg = SharpUtility::toString(pMessage);
+		m_stackTrace = SharpUtility::toString(pStackTrace);
 	}
 	else
 	{
@@ -942,7 +1079,7 @@ void SharpException::getValues(MonoObject* pException)
 	}
 }
 
-std::string SharpMarshal::toString(MonoObject* pObject)
+std::string SharpUtility::toString(MonoObject* pObject)
 {
 	// Create mono string
 	MonoString* pMonoStr = mono_object_to_string(pObject, nullptr);
@@ -957,4 +1094,15 @@ std::string SharpMarshal::toString(MonoObject* pObject)
 	mono_free(pStr);
 
 	return str;
+}
+
+std::string SharpUtility::methodSignature(const std::string& nSpace, const std::string& klass, const std::string& method, const std::string& params, bool isStatic)
+{
+	return 
+		nSpace + 
+		"." + 
+		klass + 
+		(isStatic ? "::" : ":") + 
+		method + 
+		(params.length() > 0 ? "(" + params + ")" : "");
 }

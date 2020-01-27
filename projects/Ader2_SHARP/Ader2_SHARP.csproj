@@ -21,7 +21,8 @@
     <OutputPath>..\..\out\bin\Debug-windows-x86_64\</OutputPath>
     <BaseIntermediateOutputPath>..\..\out\bin-int\Debug-windows-x86_64\Debug\Ader2_SHARP\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -53,7 +54,11 @@
   <ItemGroup>
     <Compile Include="src\Core\AderEngine.cs" />
     <Compile Include="src\Core\EngineStates.cs" />
+    <Compile Include="src\Core\Shader.cs" />
+    <Compile Include="src\Core\VAO.cs" />
+    <Compile Include="src\User\AderScene.cs" />
     <Compile Include="src\User\AderScript.cs" />
+    <Compile Include="src\User\Visual.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

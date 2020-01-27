@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>ADER_MACRO_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;..\..\libraries\mono\include\mono-2.0;..\..\libraries\spdlog\include;..\..\libraries\GLFW\include;..\..\libraries\Glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;..\..\libraries\mono\include\mono-2.0;..\..\libraries\spdlog\include;..\..\libraries\GLFW\include;..\..\libraries\Glad\include;..\..\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -94,7 +94,8 @@
     <PostBuildEvent>
       <Command>IF EXIST ..\..\libraries\mono\lib\mono-2.0-sgen.dll\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib\mono-2.0-sgen.dll ..\..\out\bin\Debug-windows-x86_64 &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib\mono-2.0-sgen.dll ..\..\out\bin\Debug-windows-x86_64 &gt; nul)
 IF EXIST ..\..\libraries\mono\etc\ (xcopy /Q /E /Y /I ..\..\libraries\mono\etc ..\..\out\bin\Debug-windows-x86_64\mono\etc &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\etc ..\..\out\bin\Debug-windows-x86_64\mono\etc &gt; nul)
-IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Debug-windows-x86_64\mono\lib &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Debug-windows-x86_64\mono\lib &gt; nul)</Command>
+IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Debug-windows-x86_64\mono\lib &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Debug-windows-x86_64\mono\lib &gt; nul)
+IF EXIST ..\..\res\ (xcopy /Q /E /Y /I ..\..\res ..\..\out\bin\Debug-windows-x86_64\res &gt; nul) ELSE (xcopy /Q /Y /I ..\..\res ..\..\out\bin\Debug-windows-x86_64\res &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -102,7 +103,7 @@ IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib .
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;..\..\libraries\mono\include\mono-2.0;..\..\libraries\spdlog\include;..\..\libraries\GLFW\include;..\..\libraries\Glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;..\..\libraries\mono\include\mono-2.0;..\..\libraries\spdlog\include;..\..\libraries\GLFW\include;..\..\libraries\Glad\include;..\..\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -121,7 +122,8 @@ IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib .
     <PostBuildEvent>
       <Command>IF EXIST ..\..\libraries\mono\lib\mono-2.0-sgen.dll\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib\mono-2.0-sgen.dll ..\..\out\bin\Release-windows-x86_64 &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib\mono-2.0-sgen.dll ..\..\out\bin\Release-windows-x86_64 &gt; nul)
 IF EXIST ..\..\libraries\mono\etc\ (xcopy /Q /E /Y /I ..\..\libraries\mono\etc ..\..\out\bin\Release-windows-x86_64\mono\etc &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\etc ..\..\out\bin\Release-windows-x86_64\mono\etc &gt; nul)
-IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Release-windows-x86_64\mono\lib &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Release-windows-x86_64\mono\lib &gt; nul)</Command>
+IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Release-windows-x86_64\mono\lib &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Release-windows-x86_64\mono\lib &gt; nul)
+IF EXIST ..\..\res\ (xcopy /Q /E /Y /I ..\..\res ..\..\out\bin\Release-windows-x86_64\res &gt; nul) ELSE (xcopy /Q /Y /I ..\..\res ..\..\out\bin\Release-windows-x86_64\res &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -129,7 +131,7 @@ IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib .
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;..\..\libraries\mono\include\mono-2.0;..\..\libraries\spdlog\include;..\..\libraries\GLFW\include;..\..\libraries\Glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;..\..\libraries\mono\include\mono-2.0;..\..\libraries\spdlog\include;..\..\libraries\GLFW\include;..\..\libraries\Glad\include;..\..\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -148,11 +150,13 @@ IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib .
     <PostBuildEvent>
       <Command>IF EXIST ..\..\libraries\mono\lib\mono-2.0-sgen.dll\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib\mono-2.0-sgen.dll ..\..\out\bin\Dist-windows-x86_64 &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib\mono-2.0-sgen.dll ..\..\out\bin\Dist-windows-x86_64 &gt; nul)
 IF EXIST ..\..\libraries\mono\etc\ (xcopy /Q /E /Y /I ..\..\libraries\mono\etc ..\..\out\bin\Dist-windows-x86_64\mono\etc &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\etc ..\..\out\bin\Dist-windows-x86_64\mono\etc &gt; nul)
-IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Dist-windows-x86_64\mono\lib &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Dist-windows-x86_64\mono\lib &gt; nul)</Command>
+IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Dist-windows-x86_64\mono\lib &gt; nul) ELSE (xcopy /Q /Y /I ..\..\libraries\mono\lib ..\..\out\bin\Dist-windows-x86_64\mono\lib &gt; nul)
+IF EXIST ..\..\res\ (xcopy /Q /E /Y /I ..\..\res ..\..\out\bin\Dist-windows-x86_64\res &gt; nul) ELSE (xcopy /Q /Y /I ..\..\res ..\..\out\bin\Dist-windows-x86_64\res &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\AderEngine.h" />
+    <ClInclude Include="src\GameCore\GameObject.h" />
     <ClInclude Include="src\CommonTypes\States.h" />
     <ClInclude Include="src\CommonTypes\reference.h" />
     <ClInclude Include="src\CommonTypes\relay_ptr.h" />
@@ -161,11 +165,15 @@ IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib .
     <ClInclude Include="src\Enums\Messages.h" />
     <ClInclude Include="src\ModuleSystem\ModuleSystem.h" />
     <ClInclude Include="src\Modules\InputInterface.h" />
+    <ClInclude Include="src\Modules\SceneManager.h" />
     <ClInclude Include="src\MonoWrap\GLUE\AderEngineSharp.h" />
+    <ClInclude Include="src\MonoWrap\GLUE\AderScene.h" />
     <ClInclude Include="src\MonoWrap\GLUE\AderScript.h" />
+    <ClInclude Include="src\MonoWrap\GLUE\InternalCalls.h" />
     <ClInclude Include="src\MonoWrap\MonoManager.h" />
     <ClInclude Include="src\OpenGLModules\GLContext.h" />
     <ClInclude Include="src\OpenGLModules\GLWindow.h" />
+    <ClInclude Include="src\Utility\File.h" />
     <ClInclude Include="src\Utility\Log.h" />
     <ClInclude Include="src\Utility\Timer.h" />
   </ItemGroup>
@@ -173,11 +181,15 @@ IF EXIST ..\..\libraries\mono\lib\ (xcopy /Q /E /Y /I ..\..\libraries\mono\lib .
     <ClCompile Include="src\AderEngine.cpp" />
     <ClCompile Include="src\ModuleSystem\ModuleSystem.cpp" />
     <ClCompile Include="src\Modules\InputInterface.cpp" />
+    <ClCompile Include="src\Modules\SceneManager.cpp" />
     <ClCompile Include="src\MonoWrap\GLUE\AderEngineSharp.cpp" />
+    <ClCompile Include="src\MonoWrap\GLUE\AderScene.cpp" />
     <ClCompile Include="src\MonoWrap\GLUE\AderScript.cpp" />
+    <ClCompile Include="src\MonoWrap\GLUE\InternalCalls.cpp" />
     <ClCompile Include="src\MonoWrap\MonoManager.cpp" />
     <ClCompile Include="src\OpenGLModules\GLContext.cpp" />
     <ClCompile Include="src\OpenGLModules\GLWindow.cpp" />
+    <ClCompile Include="src\Utility\File.cpp" />
     <ClCompile Include="src\Utility\Log.cpp" />
     <ClCompile Include="src\Utility\Timer.cpp" />
     <ClCompile Include="src\main.cpp" />

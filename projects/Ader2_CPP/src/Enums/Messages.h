@@ -5,10 +5,12 @@ namespace Messages
 	/**
 	 * All engine messages are defined here
 	 *
-	 * 0-9   reserved for system messages
-	 * 10-19 reserved for window messages
-	 * 20-29 reserved for scrip messages
-	 * 50-99 reserved for state messages
+	 * 0-9		reserved for system messages
+	 * 10-19	reserved for window messages
+	 * 20-49	reserved for script messages
+	 * 50-99	reserved for state messages
+	 * 100-199	reserved for context messages
+	 * 200-249	reserved for scene messages
 	 */
 	enum Msg
 	{
@@ -47,17 +49,11 @@ namespace Messages
 		msg_LoadAssemblies = 20,
 
 		/**
-		 * This message instructs script manager to close all current assemblies. This message must
-		 * be sent before calling ReloadAssemblies.
-		 */
-		msg_CloseAssemblies = 21,
-
-		/**
 		 * This message instructs script manager to reload all currently loaded assemblies.
 		 * This is used to provide the ability to change code compile it and the have the engine
-		 * reload it without needing to restart. Before this message all assemblies must be closed.
+		 * reload it without needing to restart.
 		 */
-		msg_ReloadAssemblies = 22,
+		msg_ReloadAssemblies = 21,
 
 		/**
 		 * This message instructs script manager to find all script objects in current assemblies.
@@ -65,14 +61,24 @@ namespace Messages
 		msg_LoadScripts = 23,
 
 		/**
+		 * This message instructs script manager to find all scene objects in current assemblies.
+		 */
+		msg_LoadAderScenes = 24,
+
+		/**
 		 * This message instructs script manager to call init on all script objects.
 		 */
-		msg_InitScripts = 24,
+		msg_InitScripts = 25,
 
 		/**
 		 * This message instructs script manager to call update on all script objects.
 		 */
-		msg_ScriptUpdate = 25,
+		msg_ScriptUpdate = 26,
+
+		/**
+		 * This message instructs script manager to send all found AderScenes to the engine modules.
+		 */
+		msg_TransmitScenes = 27,
 
 		/**
 		 * This message is sent when all input states are created and the bundle
@@ -89,5 +95,33 @@ namespace Messages
 		 * This message is sent every time keyboard state has been changed.
 		 */
 		msg_KeyStateUpdated = 52,
+
+		/**
+		 * This message is sent when a new scene is set as active scene.
+		 */
+		msg_SetScene = 200,
+
+		/**
+		 * This message instructs SceneManager to load the specified scene. 
+		 * Scene manager then invokes the Loader of the scene.
+		 */
+		msg_LoadScene = 201,
+
+		/**
+		 * This message instructs SceneManager to load the current scene. 
+		 * Scene manager then loads/reloads all current assets by clearing 
+		 * it's visuals and game objects and invoking the Loader again.
+		 */
+		msg_LoadCurrentScene = 202,
+
+		/**
+		 * This message is sent when the current scene has been changed.
+		 */
+		msg_SceneChanged = 203,
+
+		/**
+		 * This message instructs the SceneManager to reload the current scene shaders.
+		 */
+		msg_ReloadSceneShaders = 204,
 	};
 }

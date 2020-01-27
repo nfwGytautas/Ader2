@@ -38,6 +38,9 @@
       <Filter>CommonTypes</Filter>
     </ClInclude>
     <ClInclude Include="src\Defs.h" />
+    <ClInclude Include="src\Enums\Input.h">
+      <Filter>Enums</Filter>
+    </ClInclude>
     <ClInclude Include="src\Enums\Messages.h">
       <Filter>Enums</Filter>
     </ClInclude>
@@ -62,13 +65,19 @@
     <ClInclude Include="src\OpenGLModules\GLWindow.h">
       <Filter>OpenGLModules</Filter>
     </ClInclude>
+    <ClInclude Include="src\Utility\File.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
     <ClInclude Include="src\Utility\Log.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="src\Utility\Timer.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\Enums\Input.h" />
+    <ClInclude Include="src\Modules\SceneManager.h" />
+    <ClInclude Include="src\GameCore\GameObject.h" />
+    <ClInclude Include="src\MonoWrap\GLUE\AderScene.h" />
+    <ClInclude Include="src\MonoWrap\GLUE\InternalCalls.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AderEngine.cpp" />
@@ -93,6 +102,9 @@
     <ClCompile Include="src\OpenGLModules\GLWindow.cpp">
       <Filter>OpenGLModules</Filter>
     </ClCompile>
+    <ClCompile Include="src\Utility\File.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
     <ClCompile Include="src\Utility\Log.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -100,5 +112,8 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Modules\SceneManager.cpp" />
+    <ClCompile Include="src\MonoWrap\GLUE\AderScene.cpp" />
+    <ClCompile Include="src\MonoWrap\GLUE\InternalCalls.cpp" />
   </ItemGroup>
 </Project>

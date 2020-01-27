@@ -27,12 +27,17 @@ int main()
 	// Load all objects that inherit from AderScript
 	aEngine.postMessage(Messages::msg_LoadScripts);
 
+	// Load all objects that inherit from AderScene
+	aEngine.postMessage(Messages::msg_LoadAderScenes);
+
 	// Init all scripts
 	aEngine.postMessage(Messages::msg_InitScripts);
 
 	Utility::Timer timer(false);
 
 	float frameTime = 0.0f;
+
+	bool wFrame = false;
 
 	// Check if the program should exit
 	while (!aEngine.shouldClose())
@@ -42,16 +47,23 @@ int main()
 
 		if (keyboard.Keys[InputEnums::KEY_F5])
 		{
-			aEngine.postMessage(Messages::msg_CloseAssemblies);
+			aEngine.postMessage(Messages::msg_ReloadAssemblies);
 		}
 
 		if (keyboard.Keys[InputEnums::KEY_F6])
 		{
-			aEngine.postMessage(Messages::msg_ReloadAssemblies);
+			aEngine.postMessage(Messages::msg_ReloadSceneShaders);
+		}
+
+		if (keyboard.Keys[InputEnums::KEY_W] && keyboard.Keys[InputEnums::KEY_F])
+		{
+			wFrame = !wFrame;
+			aEngine.context()->toggleWireFrame(wFrame);
 		}
 
 		// Start the frame timer
 		timer.start();
+
 
 		// Update the system
 		aEngine.postMessage(Messages::msg_SystemUpdate);
@@ -60,10 +72,8 @@ int main()
 		aEngine.postMessage(Messages::msg_SystemRender);
 
 		// Update scripts
-		if (!aEngine.scriptManager()->isClosed())
-		{
-			aEngine.postMessage(Messages::msg_ScriptUpdate);
-		}
+		aEngine.postMessage(Messages::msg_ScriptUpdate);
+
 
 		// Stop the timer
 		timer.end();

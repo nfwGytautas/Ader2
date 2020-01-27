@@ -34,6 +34,9 @@ project "Ader2_CPP"
 
 		-- Glad
 		engine_paths.lib["Glad"]["include"],
+
+		-- GLM
+		engine_paths.lib["glm"]["include"],
 	}
 
 	libdirs
@@ -76,6 +79,9 @@ project "Ader2_CPP"
 
 		-- Mono lib folder
 		("{COPY} " .. engine_paths.lib["mono"]["copy_lib"] .. " ../" .. engine_paths.out_target .. "/mono/lib"),
+
+		-- res folder
+		("{COPY} " .. "../../res" .. " ../" .. engine_paths.out_target .. "/res"),
 	}
 
 	filter "system:windows"

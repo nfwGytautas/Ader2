@@ -31,10 +31,15 @@ lib_Glad["include"] = lib_root .. "/Glad/include"
 lib_Glad["lib"] = lib_root .. "/Glad/lib"
 lib_Glad["dll"] = "Glad.lib"
 
+-- GLM library variables
+lib_GLM = {}
+lib_GLM["include"] = lib_root .. "/glm"
+
 -- Add library tables to libraries
 libraries["mono"] = lib_mono
 libraries["spdlog"] = lib_spdlog
 libraries["GLFW"] = lib_GLFW
 libraries["Glad"] = lib_Glad
+libraries["glm"] = lib_GLM
 
 return libraries
