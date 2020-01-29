@@ -22,17 +22,24 @@ namespace Ader2
         // Instance of the scene object
         private IntPtr _CInstance;
 
+        // Returns true if asset with given name exists
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static IntPtr __newGameObject(IntPtr scene);
+
         /// <summary>
         /// This method should load ALL assets used by the scene
         /// </summary>
         public abstract void LoadAssets();
 
         /// <summary>
-        /// Create new visual and add it to the scene
+        /// Creates a new GameObject with the specified Name
         /// </summary>
-        public Visual NewVisual()
+        /// <returns>Game object instance</returns>
+        public GameObject NewGameObject()
         {
-            return new Visual(this);
+            // Create a new game object and add it to the scene
+            GameObject go = new GameObject(__newGameObject(_CInstance));
+            return go;
         }
 
         /// <summary>

@@ -41,7 +41,8 @@ AderEngine::AderEngine()
 	m_window(new GLWindow()), 
 	m_glContext(new GLContext()),
 	m_inputInterface(new InputInterface()),
-	m_sceneManager(new SceneManager())
+	m_sceneManager(new SceneManager()),
+	m_assetManager(new AssetManager())
 {
 	// Initialize logger
 	Log::init();
@@ -80,6 +81,11 @@ Memory::reference<SceneManager> AderEngine::scenes()
 	return m_sceneManager;
 }
 
+Memory::reference<AssetManager> AderEngine::assets()
+{
+	return m_assetManager;
+}
+
 std::vector<MessageBus::ModuleEntry> AderEngine::getModules()
 {
 	return
@@ -89,6 +95,7 @@ std::vector<MessageBus::ModuleEntry> AderEngine::getModules()
 		m_glContext.as<Module>(),
 		m_inputInterface.as<Module>(),
 		m_sceneManager.as<Module>(),
+		m_assetManager.as<Module>(),
 	};
 }
 

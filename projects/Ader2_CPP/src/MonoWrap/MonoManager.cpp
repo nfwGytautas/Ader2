@@ -33,10 +33,12 @@
 #define ASSEMBLY_NAME "Ader2_SHARP.dll"
 #define SCRIPT_NAMESPACE "Ader2"
 #define ENGINE_NAMESPACE "Ader2.Core"
+#define ASSETS_NAMESPACE "Ader2.Core"
 #define SCENE_NAMESPACE "Ader2"
 #define SCRIPT_CLASS_NAME "AderScript"
 #define ENGINE_CLASS_NAME "AderEngine"
 #define SCENE_CLASS_NAME "AderScene"
+#define ASSETS_CLASS_NAME "AderAssets"
 #define SCRIPT_CLASS_FILTER(x) (x == "Internal" || x == "<Module>")
 
 #include <iostream>
@@ -49,7 +51,8 @@ MonoManager::MonoManager()
 	: 
 	m_pAderScriptBase(new AderScriptBase()), 
 	m_pAderEngine(new AderEngineSharp()),
-	m_pAderSceneBase(new AderSceneBase())
+	m_pAderSceneBase(new AderSceneBase()),
+	m_pAderAssets(new AderAssetsSharp())
 {
 	ms_pStaticThis = this;
 }
@@ -69,6 +72,11 @@ MonoManager::~MonoManager()
 	if (m_pAderSceneBase)
 	{
 		delete m_pAderSceneBase;
+	}
+
+	if (m_pAderAssets)
+	{
+		delete m_pAderAssets;
 	}
 }
 
@@ -207,6 +215,8 @@ int MonoManager::reloadAssemblies()
 {
 	int result = 0;
 
+	this->postMessage(Messages::msg_ClearAssets);
+
 	// Dereference the engine assembly so it can be cleaned up
 	m_engineAssembly = nullptr;
 
@@ -344,6 +354,13 @@ void MonoManager::initEngine()
 	m_pAderSceneBase->Constructor = m_pAderSceneBase->Klass->getMethod(".ctor", "", false);
 	m_pAderSceneBase->LoadAssets = m_pAderSceneBase->Klass->getMethod("LoadAssets", "", false);
 	m_pAderSceneBase->_CInstance = m_pAderSceneBase->Klass->getField("_CInstance");
+
+	// Assign assets variables
+	m_pAderAssets->Klass = m_engineAssembly->getClass(ASSETS_NAMESPACE, ASSETS_CLASS_NAME);
+	m_pAderAssets->_CInstance = m_pAderAssets->Klass->getField("_CInstance");
+
+	// Transmit the interface
+	this->postMessage(Messages::msg_TransmitAssets, m_pAderAssets);
 }
 
 void MonoManager::setFields()

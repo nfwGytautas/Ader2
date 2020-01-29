@@ -3,6 +3,7 @@
 // Forward declarations
 class VAO;
 class Shader;
+class Texture;
 struct AderScene;
 struct GameObject;
 
@@ -18,6 +19,9 @@ struct GameObject;
 
 // Scenes
 #include "MonoWrap/GLUE/AderScene.h"
+
+// Graphics types are assets
+#include "CommonTypes/Asset.h"
 
 
 /**
@@ -91,12 +95,13 @@ private:
  * Vertex array object class, this is used to specify the shape of the object
  * we want to render the other part is the textures
  */
-class VAO
+class VAO : public Asset
 {
 private:
     enum AttribLocations
     {
         al_Vertices = 0,
+        al_TexCoord = 1,
     };
 public:
     /**
@@ -127,6 +132,15 @@ public:
     void createVerticesBuffer(std::vector<float>& vertices, bool dynamic);
 
     /**
+     * Create texture coordinate buffer for this VAO with the specified coords buffer
+     *
+     * @param texCoords Vector containing texCoord data
+     * @param dynamic Boolean specifying if the vertices buffer will be changed
+     *                during runtime
+     */
+    void createUVBuffer(std::vector<float>& texCoords, bool dynamic);
+
+    /**
      * Bind this VAO to the current OpenGL state machine.
      */
     void bind() const;
@@ -139,15 +153,21 @@ private:
 
     unsigned int m_idIndices = 0;
     unsigned int m_idVertices = 0;
+    unsigned int m_idTexCoords = 0;
 
     unsigned int m_renderCount = 0;
 };
 
 
-class Shader
+/**
+ * Shader class is used to define how to interpret the vertex and texture data
+ */
+class Shader : public Asset
 {
 public:
+    /// Source(path to the file) of the vertex shader
     std::string VertexSource;
+    /// Source(path to the file) of the fragment shader
     std::string FragmentSource;
 
     /**
@@ -158,7 +178,7 @@ public:
     ~Shader();
 
     /**
-     * Bind this VAO to the current OpenGL state machine.
+     * Bind this shader to the current OpenGL state machine.
      */
     void bind();
 
@@ -174,4 +194,42 @@ private:
     void loadShader();
 private:
     unsigned int m_idShader = 0;
+};
+
+
+/**
+ * Texture class, this is used to specify the texture of the object
+ * we want to render the other part is the VAO
+ */
+class Texture : public Asset
+{
+public:
+    /// Source(path to the file) of the texture
+    std::string Source;
+
+    /**
+     * Create texture
+     */
+    Texture();
+
+    ~Texture();
+
+    /**
+     * Bind this texture to the current OpenGL state machine 
+     * at the specified texture slot.
+     */
+    void bind(unsigned int slot = 0);
+
+    /**
+     * Loads the texture from the source
+     */
+    void load();
+private:
+    // Deletes the texture
+    void deleteTexture();
+
+    // Loads the texture
+    void loadTexture();
+private:
+    unsigned int m_idTexture = 0;
 };

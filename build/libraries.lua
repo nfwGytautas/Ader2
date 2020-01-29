@@ -35,11 +35,16 @@ lib_Glad["dll"] = "Glad.lib"
 lib_GLM = {}
 lib_GLM["include"] = lib_root .. "/glm"
 
+-- GLM library variables
+lib_stbimage = {}
+lib_stbimage["include"] = lib_root .. "/stbimage"
+
 -- Add library tables to libraries
 libraries["mono"] = lib_mono
 libraries["spdlog"] = lib_spdlog
 libraries["GLFW"] = lib_GLFW
 libraries["Glad"] = lib_Glad
 libraries["glm"] = lib_GLM
+libraries["stb_image"] = lib_stbimage
 
 return libraries

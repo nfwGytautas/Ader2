@@ -7,6 +7,9 @@
     <Filter Include="Enums">
       <UniqueIdentifier>{CDEC1D0D-3901-46BE-0283-E91D6E5642EF}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameCore">
+      <UniqueIdentifier>{A8F55232-94C2-AD3D-BDDB-9BE5A907E3CB}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ModuleSystem">
       <UniqueIdentifier>{F05AF38A-DCBD-822F-8543-BBE571854EB2}</UniqueIdentifier>
     </Filter>
@@ -44,16 +47,28 @@
     <ClInclude Include="src\Enums\Messages.h">
       <Filter>Enums</Filter>
     </ClInclude>
+    <ClInclude Include="src\GameCore\GameObject.h">
+      <Filter>GameCore</Filter>
+    </ClInclude>
     <ClInclude Include="src\ModuleSystem\ModuleSystem.h">
       <Filter>ModuleSystem</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\InputInterface.h">
       <Filter>Modules</Filter>
     </ClInclude>
+    <ClInclude Include="src\Modules\SceneManager.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
     <ClInclude Include="src\MonoWrap\GLUE\AderEngineSharp.h">
       <Filter>MonoWrap\GLUE</Filter>
     </ClInclude>
+    <ClInclude Include="src\MonoWrap\GLUE\AderScene.h">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClInclude>
     <ClInclude Include="src\MonoWrap\GLUE\AderScript.h">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MonoWrap\GLUE\InternalCalls.h">
       <Filter>MonoWrap\GLUE</Filter>
     </ClInclude>
     <ClInclude Include="src\MonoWrap\MonoManager.h">
@@ -74,10 +89,8 @@
     <ClInclude Include="src\Utility\Timer.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\Modules\SceneManager.h" />
-    <ClInclude Include="src\GameCore\GameObject.h" />
-    <ClInclude Include="src\MonoWrap\GLUE\AderScene.h" />
-    <ClInclude Include="src\MonoWrap\GLUE\InternalCalls.h" />
+    <ClInclude Include="src\Modules\AssetManager.h" />
+    <ClInclude Include="src\CommonTypes\Asset.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AderEngine.cpp" />
@@ -87,10 +100,19 @@
     <ClCompile Include="src\Modules\InputInterface.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="src\Modules\SceneManager.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
     <ClCompile Include="src\MonoWrap\GLUE\AderEngineSharp.cpp">
       <Filter>MonoWrap\GLUE</Filter>
     </ClCompile>
+    <ClCompile Include="src\MonoWrap\GLUE\AderScene.cpp">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClCompile>
     <ClCompile Include="src\MonoWrap\GLUE\AderScript.cpp">
+      <Filter>MonoWrap\GLUE</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonoWrap\GLUE\InternalCalls.cpp">
       <Filter>MonoWrap\GLUE</Filter>
     </ClCompile>
     <ClCompile Include="src\MonoWrap\MonoManager.cpp">
@@ -112,8 +134,7 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Modules\SceneManager.cpp" />
-    <ClCompile Include="src\MonoWrap\GLUE\AderScene.cpp" />
-    <ClCompile Include="src\MonoWrap\GLUE\InternalCalls.cpp" />
+    <ClCompile Include="src\Modules\AssetManager.cpp" />
+    <ClCompile Include="src\GameCore\GameObject.cpp" />
   </ItemGroup>
 </Project>

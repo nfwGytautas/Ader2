@@ -59,6 +59,8 @@ class AderScript;
 
 struct AderEngineSharp;
 
+struct AderAssetsSharp;
+
 struct AderSceneBase;
 class AderScene;
 
@@ -81,6 +83,7 @@ class AderScene;
  *
  * Posts:
  *  - TransmitScenes
+ *  - TransmitAssets
  */
 class MonoManager : public Module
 {
@@ -215,6 +218,9 @@ private:
 
     /// Pointer to ader engine interface
     AderEngineSharp* m_pAderEngine = nullptr;
+
+    /// Pointer to ader assets interface
+    AderAssetsSharp* m_pAderAssets = nullptr;
 
     /// Vector of all loaded scripts
     std::vector<Memory::reference<AderScript>> m_scripts;

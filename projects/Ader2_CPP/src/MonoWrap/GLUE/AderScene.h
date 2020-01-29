@@ -8,24 +8,27 @@
 // VAO, Shader
 #include "OpenGLModules/GLContext.h"
 
+// Asset base class
+#include "CommonTypes/Asset.h"
+
 /**
  * Visual struct is used to define a single way something looks.
  * When creating a GameObject a valid visual must first be created,
  * then it can be assigned to the GameObject.
  */
-struct Visual
+struct Visual : public Asset
 {
-    /// Name of the visual
-    std::string Name;
-
     /// Objects using this visual
-    std::vector<Memory::relay_ptr<GameObject>> Objects;
+    std::vector<GameObject*> Objects;
 
     /// Reference to the vertex array of this visual
-    Memory::reference<VAO> VAO;
+    VAO* VAO;
+
+    /// Map of textures, key symbolizes the texture slot
+    std::unordered_map<int, Texture*> Textures;
 
     /// Reference to the shader of this visual
-    Memory::reference<Shader> Shader;
+    Shader* Shader;
 };
 
 
@@ -79,7 +82,7 @@ public:
     bool isStartingScene();
 
     /**
-     * Invoke LoadAssets for this object returns an exception if it occured
+     * Invoke LoadAssets for this object returns an exception if it occurred
      */
     Memory::reference<SharpException> invokeLoadAssets();
 
@@ -89,9 +92,21 @@ public:
     std::vector<Visual*> getVisuals();
 
     /**
-     * Creates a new visual for the scene and returns it
+     * Adds a visual to the scene
      */
-    Visual* newVisual();
+    void addVisual(Visual* visual);
+
+    /**
+     * Removes the visual from the scene, used by the GameObject,
+     * when the last GameObject from the visual is removed the 
+     * visual is removed from the scene
+     */
+    void removeVisual(Visual* visual);
+
+    /**
+     * Creates a new game object
+     */
+    GameObject* newGameObject();
 private:
     /// Class representation of this implementation
     Memory::reference<SharpClass> m_class;
@@ -109,7 +124,7 @@ private:
     MonoObject* m_pInstance;
 
     /// Objects of the scene
-    std::vector<Memory::reference<GameObject>> m_objects;
+    std::vector<GameObject*> m_objects;
 
     /// Visuals that belong to this scene
     std::vector<Visual*> m_visuals;

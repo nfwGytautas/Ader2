@@ -7,7 +7,7 @@
  */
 struct AderEngineSharp
 {
-    /// Class of ader engines
+    /// Class of ader engine
     Memory::reference<SharpClass> Klass;
 
     /// _wndState field
@@ -15,4 +15,16 @@ struct AderEngineSharp
 
     /// _keyState field
     Memory::reference<SharpField> FieldKeyState;
+};
+
+/**
+ * C++ representation of the AssetManager.cs
+ */
+struct AderAssetsSharp
+{
+    /// Class of ader asset manager
+    Memory::reference<SharpClass> Klass;
+
+    /// _CInstance field
+    Memory::reference<SharpField> _CInstance;
 };

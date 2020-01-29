@@ -3,31 +3,26 @@ using System.Runtime.CompilerServices;
 
 namespace Ader2.Core
 {
-    public class Shader : AderAsset
+    public class Texture : AderAsset
     {
         /// <summary>
-        /// Vertex source of the shader
+        /// Image source of the texture
         /// </summary>
-        public string VertexSource { get; set; }
+        public string Source { get; set; }
 
-        /// <summary>
-        /// Fragment source of the shader
-        /// </summary>
-        public string FragmentSource { get; set; }
-
-        // Creates new shader
+        // Creates new Texture
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static IntPtr __new(IntPtr manager, string name);
 
         // Loads the shader with the specified paths
         [MethodImpl(MethodImplOptions.InternalCall)]
-        extern static void __load(IntPtr instance, string vSource, string fSource);
+        extern static void __load(IntPtr instance, string source);
 
-        public Shader()
+        public Texture()
         {
         }
 
-        public Shader(IntPtr instance)
+        public Texture(IntPtr instance)
         {
             InstantiateFromPtr(instance);
         }
@@ -37,7 +32,7 @@ namespace Ader2.Core
         /// </summary>
         public void Load()
         {
-            __load(_CInstance, VertexSource, FragmentSource);
+            __load(_CInstance, Source);
         }
 
         protected internal override void InstantiateNew(IntPtr manager, string name)

@@ -81,6 +81,11 @@ namespace Messages
 		msg_TransmitScenes = 27,
 
 		/**
+		 * This message instructs script manager to send the AderAssets interface pointer.
+		 */
+		msg_TransmitAssets = 28,
+
+		/**
 		 * This message is sent when all input states are created and the bundle
 		 * is being sent.
 		 */
@@ -123,5 +128,10 @@ namespace Messages
 		 * This message instructs the SceneManager to reload the current scene shaders.
 		 */
 		msg_ReloadSceneShaders = 204,
+
+		/**
+		 * This message instructs the AssetManager to release all assets
+		 */
+		msg_ClearAssets = 205,
 	};
 }

@@ -12,19 +12,36 @@ namespace Scripts
             Console.WriteLine("Loading test scene!");
 
             Console.WriteLine("Creating visual!");
-            Visual vis = NewVisual();
+            Visual vis = AderAssets.New<Visual>("test_visual");
 
             Console.WriteLine("Loading shader!");
-            vis.Shader.VertexSource = "res/vertex_1.txt";
-            vis.Shader.FragmentSource = "res/fragment_1.txt";
-            vis.Shader.Load();
+            Shader shader = AderAssets.New<Shader>("test_shader");
+
+            //shader.VertexSource = "res/vertex_1.txt";
+            //shader.FragmentSource = "res/fragment_1.txt";
+
+            shader.VertexSource = "res/vertex_texture.txt";
+            shader.FragmentSource = "res/fragment_texture.txt";
+
+            shader.Load();
+
+            vis.Shader = shader;
 
             Console.WriteLine("Shader loaded!");
+            VAO vao = AderAssets.New<VAO>("test_VAO");
+
             float[] vertices = {
                 0.5f,  0.5f, 0.0f,  // top right
 		        0.5f, -0.5f, 0.0f,  // bottom right
 		       -0.5f, -0.5f, 0.0f,  // bottom left
 		       -0.5f,  0.5f, 0.0f   // top left 
+            };
+
+            float[] texCoords = {
+                1.0f, 1.0f,  // top right
+                1.0f, 0.0f,  // bottom right corner
+                0.0f, 0.0f,  // bottom left corner  
+                0.0f, 1.0f   // top left corner
             };
 
             uint[] indices = { 
@@ -33,10 +50,27 @@ namespace Scripts
             };
 
             Console.WriteLine("Setting vertices!");
-            vis.VAO.SetVertices(vertices);
+            vao.SetVertices(vertices);
 
             Console.WriteLine("Setting indices!");
-            vis.VAO.SetIndices(indices);
+            vao.SetIndices(indices);
+
+            Console.WriteLine("Setting texture coordinates!");
+            vao.SetUV(texCoords);
+
+            vis.VAO = vao;
+
+            Console.WriteLine("Creating texture!");
+            Texture tex = AderAssets.New<Texture>("test_texture");
+
+            tex.Source = "res/container.jpg";
+            tex.Load();
+
+            vis.SetTexture(0, tex);
+
+            Console.WriteLine("Creating game object!");
+            GameObject go = NewGameObject();
+            go.Visual = vis;
         }
     }
 

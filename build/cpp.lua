@@ -37,6 +37,9 @@ project "Ader2_CPP"
 
 		-- GLM
 		engine_paths.lib["glm"]["include"],
+
+		-- STB image
+		engine_paths.lib["stb_image"]["include"],
 	}
 
 	libdirs

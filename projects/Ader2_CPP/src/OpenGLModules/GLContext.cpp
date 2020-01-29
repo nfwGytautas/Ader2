@@ -6,8 +6,13 @@
 // Logging
 #include "Utility/Log.h"
 
-// Reading shader sources
+// Reading shader sources and texture files
 #include "Utility/File.h"
+
+// Assert
+#include "Defs.h"
+
+
 
 bool GLContext::canShutdown()
 {
@@ -97,6 +102,12 @@ int GLContext::render()
         visual->VAO->bind();
         visual->Shader->bind();
 
+        // Bind textures to their slots
+        for (auto& it : visual->Textures)
+        {
+            it.second->bind(it.first);
+        }
+
         visual->VAO->render();
     }
 
@@ -126,6 +137,7 @@ VAO::~VAO()
     // Delete buffers
     deleteBuffer(m_idIndices);
     deleteBuffer(m_idVertices);
+    deleteBuffer(m_idTexCoords);
 }
 
 void VAO::render()
@@ -168,7 +180,7 @@ void VAO::createVerticesBuffer(std::vector<float>& vertices, bool dynamic)
     deleteBuffer(m_idVertices);
 
     // Set render count
-    if (m_idIndices != 0)
+    if (m_idVertices != 0)
     {
         m_renderCount = vertices.size() / 3;
     }
@@ -199,14 +211,53 @@ void VAO::createVerticesBuffer(std::vector<float>& vertices, bool dynamic)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void VAO::createUVBuffer(std::vector<float>& texCoords, bool dynamic)
+{
+    // Delete previous buffer
+    deleteBuffer(m_idTexCoords);
+
+    // Create buffer and add to buffers vector
+    glGenBuffers(1, &m_idTexCoords);
+
+    // Bind the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, m_idTexCoords);
+
+    // Add buffer data
+    if (!dynamic)
+    {
+        glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(float), texCoords.data(), GL_STATIC_DRAW);
+    }
+
+    // Assign attrib pointer
+    glVertexAttribPointer(
+        al_TexCoord,
+        2,
+        GL_FLOAT,
+        false,
+        2 * sizeof(float),
+        (const void*)0
+    );
+
+    // Unbind buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void VAO::bind() const
 {
+    ADER_ASSERT(m_idArray != 0, "Trying to bind invalid vertex array");
+
     // Binds the array
     glBindVertexArray(m_idArray);
 
+    // Enable vertex attribute arrays
     if (m_idVertices)
     {
         glEnableVertexAttribArray(al_Vertices);
+    }
+
+    if (m_idTexCoords)
+    {
+        glEnableVertexAttribArray(al_TexCoord);
     }
 }
 
@@ -230,6 +281,7 @@ Shader::~Shader()
 
 void Shader::bind()
 {
+    ADER_ASSERT(m_idShader != 0, "Trying to bind invalid shader");
     glUseProgram(m_idShader);
 }
 
@@ -325,4 +377,82 @@ void Shader::loadShader()
     // Delete shaders
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+}
+
+Texture::Texture()
+{
+}
+
+Texture::~Texture()
+{
+    // Delete the texture
+    deleteTexture();
+}
+
+void Texture::bind(unsigned int slot)
+{
+    ADER_ASSERT(m_idTexture != 0, "Trying to bind invalid texture");
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_idTexture);
+}
+
+void Texture::load()
+{
+    // Delete current texture if it exists
+    deleteTexture();
+
+    // Load the texture
+    loadTexture();
+}
+
+void Texture::deleteTexture()
+{
+    // Check that the texture is valid and then delete it
+    if (m_idTexture != 0)
+    {
+        glDeleteTextures(1, &m_idTexture);
+    }
+}
+
+void Texture::loadTexture()
+{
+    // Load texture
+    Memory::reference<ImageFileContents> image = readImage(Source);
+
+    if (!image.valid())
+    {
+        LOG_WARN("Texture couldn't be created!");
+        return;
+    }
+
+    // Generate texture
+    glGenTextures(1, &m_idTexture);
+
+    // Bind the texture
+    glBindTexture(GL_TEXTURE_2D, m_idTexture);
+
+    // Texture parameters
+
+    // Repeat textures when the object is to big
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // Interpolate final color
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Create texture
+    if (image->BPP == 3)
+    {
+        // Create RGB texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->Width, image->Height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->Buffer);
+    }
+    else if (image->BPP == 4)
+    {
+        // Create RGBA texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->Width, image->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->Buffer);
+    }
+
+    // Generate mip maps
+    glGenerateMipmap(GL_TEXTURE_2D);
 }

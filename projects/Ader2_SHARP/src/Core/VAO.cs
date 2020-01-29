@@ -3,14 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace Ader2.Core
 {
-    public class VAO
+    public class VAO : AderAsset
     {
-        // Instance of the VAO object
-        private IntPtr _CInstance;
-
-        // Returns the VAO instance of the specified visual
+        // Creates new VAO
         [MethodImpl(MethodImplOptions.InternalCall)]
-        extern static IntPtr __get(IntPtr visual);
+        extern static IntPtr __new(IntPtr manager, string name);
 
         // Sets indices
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -20,13 +17,17 @@ namespace Ader2.Core
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static void __setVertices(IntPtr instance, float[] vertices);
 
-        /// <summary>
-        /// Creates a new VAO for the visual
-        /// </summary>
-        /// <param name="visual"></param>
-        public VAO(Visual visual)
+        // Sets texture coordinates
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static void __setUV(IntPtr instance, float[] texCoords);
+
+        public VAO()
         {
-            _CInstance = __get(visual.GetCInstance());
+        }
+
+        public VAO(IntPtr instance)
+        {
+            InstantiateFromPtr(instance);
         }
 
         /// <summary>
@@ -48,13 +49,23 @@ namespace Ader2.Core
         }
 
         /// <summary>
-        /// Internal use only
-        /// Returns the C++ instance of the visual
+        /// Sets the UV coordinates of the array
         /// </summary>
-        /// <returns>IntPtr to the C++ instance</returns>
-        internal IntPtr GetCInstance()
+        /// <param name="texCoords">New UV coordinates of the array</param>
+        public void SetUV(float[] texCoords)
         {
-            return _CInstance;
+            __setUV(_CInstance, texCoords);
         }
+
+        protected internal override void InstantiateNew(IntPtr manager, string name)
+        {
+            _CInstance = __new(manager, name);
+        }
+
+        protected internal override void InstantiateFromPtr(IntPtr ptr)
+        {
+            _CInstance = ptr;
+        }
+
     }
 }

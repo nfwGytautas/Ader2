@@ -1,42 +1,16 @@
 #include "InternalCalls.h"
 
 #include "MonoWrap/MonoManager.h"
+#include "Modules/AssetManager.h"
 #include "Utility/Log.h"
 
-void AderInternals::addInternals()
+VAO* VAOnew(AssetManager* assetManager, MonoObject* name)
 {
-	sceneInternals();
-	visualInternals();
-	engineInternals();
+	std::string assetName = SharpUtility::toString(name);
+	return assetManager->newAsset<VAO>(assetName);
 }
 
-
-
-
-Visual* visualNew(AderScene* scene)
-{
-	return scene->newVisual();
-}
-
-Memory::reference<VAO>* VAOget(Visual* visual)
-{
-	return &visual->VAO;
-}
-
-Memory::reference<Shader>* Shaderget(Visual* visual)
-{
-	return &visual->Shader;
-}
-
-void Shaderload(Memory::reference<Shader>* shader, MonoObject* vertex, MonoObject* fragment)
-{
-	(*shader)->VertexSource = SharpUtility::toString(vertex);
-	(*shader)->FragmentSource = SharpUtility::toString(fragment);
-
-	(*shader)->load();
-}
-
-void VAOsetVertices(Memory::reference<VAO>* vao, MonoArray* vertices)
+void VAOsetVertices(VAO* vao, MonoArray* vertices)
 {
 	// Get the size of the array
 	int size = mono_array_length(vertices);
@@ -46,11 +20,11 @@ void VAOsetVertices(Memory::reference<VAO>* vao, MonoArray* vertices)
 
 	// Create vector from the array and create vertices buffer
 	std::vector<float> verts(start, start + size);
-	(*vao)->bind();
-	(*vao)->createVerticesBuffer(verts, false);
+	vao->bind();
+	vao->createVerticesBuffer(verts, false);
 }
 
-void VAOsetIndices(Memory::reference<VAO>* vao, MonoArray* indices)
+void VAOsetIndices(VAO* vao, MonoArray* indices)
 {
 	// Get the size of the array
 	int size = mono_array_length(indices);
@@ -60,86 +34,160 @@ void VAOsetIndices(Memory::reference<VAO>* vao, MonoArray* indices)
 
 	// Create vector from the array and create indices buffer
 	std::vector<unsigned int> indc(start, start + size);
-	(*vao)->bind();
-	(*vao)->createIndiceBuffer(indc, false);
+	vao->bind();
+	vao->createIndiceBuffer(indc, false);
 }
 
-void AderInternals::visualInternals()
+void VAOsetUV(VAO* vao, MonoArray* texCoords)
 {
-	// Consts
-	const std::string nSpace = "Ader2";
-	const std::string nSpaceCore = "Ader2.Core";
-	const std::string klass = "Visual";
+	// Get the size of the array
+	int size = mono_array_length(texCoords);
 
-	// Create signatures
-	std::string newSignature = 
-		SharpUtility::methodSignature(
-			nSpace,
-			klass,
-			"__new",
-			"intptr",
-			true);
+	// Get address to the first element
+	float* start = mono_array_addr(texCoords, float, 0);
 
-	// Create signatures
-	std::string VAOgetSignature =
-		SharpUtility::methodSignature(
-			nSpaceCore,
-			"VAO",
-			"__get",
-			"intptr",
-			true);
-
-	std::string ShadergetSignature =
-		SharpUtility::methodSignature(
-			nSpaceCore,
-			"Shader",
-			"__get",
-			"intptr",
-			true);
-
-	std::string ShaderloadSignature =
-		SharpUtility::methodSignature(
-			nSpaceCore,
-			"Shader",
-			"__load",
-			"intptr,string,string",
-			true);
-
-	std::string VAOsetVerticesSignature =
-		SharpUtility::methodSignature(
-			nSpaceCore,
-			"VAO",
-			"__setVertices",
-			"intptr,single[]",
-			true);
-
-	std::string VAOsetIndicesSignature =
-		SharpUtility::methodSignature(
-			nSpaceCore,
-			"VAO",
-			"__setIndices",
-			"intptr,uint[]",
-			true);
-
-	mono_add_internal_call(newSignature.c_str(), visualNew);
-
-	mono_add_internal_call(VAOgetSignature.c_str(), VAOget);
-	mono_add_internal_call(ShadergetSignature.c_str(), Shaderget);
-	mono_add_internal_call(ShaderloadSignature.c_str(), Shaderload);
-
-	mono_add_internal_call(VAOsetVerticesSignature.c_str(), VAOsetVertices);
-	mono_add_internal_call(VAOsetIndicesSignature.c_str(), VAOsetIndices);
+	// Create vector from the array and create indices buffer
+	std::vector<float> tex(start, start + size);
+	vao->bind();
+	vao->createUVBuffer(tex, false);
 }
 
 
 
-
-void AderInternals::sceneInternals()
+Visual* Visualnew(AssetManager* assetManager, MonoObject* name)
 {
-	//mono_add_internal_call("");
+	std::string assetName = SharpUtility::toString(name);
+	return assetManager->newAsset<Visual>(assetName);
 }
 
-void AderInternals::engineInternals()
+void VisualsetVAO(Visual* visual, VAO* vao)
 {
-	
+	visual->VAO = vao;
+}
+
+void VisualsetShader(Visual* visual, Shader* shader)
+{
+	visual->Shader = shader;
+}
+
+void VisualsetTexture(Visual* visual, int slot, Texture* texture)
+{
+	// Set the texture
+	visual->Textures[slot] = texture;
+}
+
+VAO* VisualgetVAO(Visual* visual)
+{
+	return visual->VAO;
+}
+
+Shader* VisualgetShader(Visual* visual)
+{
+	return visual->Shader;
+}
+
+Texture* VisualgetTexture(Visual* visual, int slot)
+{
+	return visual->Textures[slot];
+}
+
+
+
+Shader* Shadernew(AssetManager* assetManager, MonoObject* name)
+{
+	std::string assetName = SharpUtility::toString(name);
+	return assetManager->newAsset<Shader>(assetName);
+}
+
+void Shaderload(Shader* shader, MonoObject* vertex, MonoObject* fragment)
+{
+	shader->VertexSource = SharpUtility::toString(vertex);
+	shader->FragmentSource = SharpUtility::toString(fragment);
+
+	shader->load();
+}
+
+
+
+Texture* Texturenew(AssetManager* assetManager, MonoObject* name)
+{
+	std::string assetName = SharpUtility::toString(name);
+	return assetManager->newAsset<Texture>(assetName);
+}
+
+void Textureload(Texture* texture, MonoObject* source)
+{
+	texture->Source = SharpUtility::toString(source);
+
+	texture->load();
+}
+
+
+
+Asset* AssetManagerget(AssetManager* manager, MonoObject* name)
+{
+	return manager->getAsset(SharpUtility::toString(name));
+}
+
+bool AssetManagerhas(AssetManager* manager, MonoObject* name)
+{
+	return manager->hasAsset(SharpUtility::toString(name));
+}
+
+
+
+GameObject* ScenenewGameObject(AderScene* scene)
+{
+	return scene->newGameObject();
+}
+
+
+
+Visual* GOgetVisual(GameObject* gObject)
+{
+	return gObject->getVisual();
+}
+
+void GOsetVisual(GameObject* gObject, Visual* visual)
+{
+	return gObject->setVisual(visual);
+}
+
+
+
+void AderInternals::addInternals()
+{
+	// Add visual internals
+	mono_add_internal_call("Ader2.Visual::__new(intptr,string)", Visualnew);
+	mono_add_internal_call("Ader2.Visual::__setVAO(intptr,intptr)", VisualsetVAO);
+	mono_add_internal_call("Ader2.Visual::__setShader(intptr,intptr)", VisualsetShader);
+	mono_add_internal_call("Ader2.Visual::__setTexture(intptr,int,intptr)", VisualsetTexture);
+	mono_add_internal_call("Ader2.Visual::__getVAO(intptr)", VisualgetVAO);
+	mono_add_internal_call("Ader2.Visual::__getShader(intptr)", VisualgetShader);
+	mono_add_internal_call("Ader2.Visual::__getTexture(intptr,int)", VisualgetTexture);
+
+	// Add VAO internals
+	mono_add_internal_call("Ader2.Core.VAO::__new(intptr,string)", VAOnew);
+	mono_add_internal_call("Ader2.Core.VAO::__setIndices(intptr,uint[])", VAOsetIndices);
+	mono_add_internal_call("Ader2.Core.VAO::__setVertices(intptr,single[])", VAOsetVertices);
+	mono_add_internal_call("Ader2.Core.VAO::__setUV(intptr,single[])", VAOsetUV);
+
+	// Add Shader internals
+	mono_add_internal_call("Ader2.Core.Shader::__new(intptr,string)", Shadernew);
+	mono_add_internal_call("Ader2.Core.Shader::__load(intptr,string,string)", Shaderload);
+
+	// Add texture internals
+	mono_add_internal_call("Ader2.Core.Texture::__new(intptr,string)", Texturenew);
+	mono_add_internal_call("Ader2.Core.Texture::__load(intptr,string)", Textureload);
+
+	// Add asset manager internals
+	mono_add_internal_call("Ader2.Core.AderAssets::__get(intptr,string)", AssetManagerget);
+	mono_add_internal_call("Ader2.Core.AderAssets::__has(intptr,string)", AssetManagerhas);
+
+	// Add scene internals
+	mono_add_internal_call("Ader2.AderScene::__newGameObject(intptr)", ScenenewGameObject);
+
+	// Add game object internals
+	mono_add_internal_call("Ader2.GameObject::__getVisual(intptr)", GOgetVisual);
+	mono_add_internal_call("Ader2.GameObject::__setVisual(intptr,intptr)", GOsetVisual);
 }

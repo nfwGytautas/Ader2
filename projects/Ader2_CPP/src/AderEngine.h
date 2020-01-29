@@ -24,6 +24,9 @@
 // Scene manager module
 #include "Modules/SceneManager.h"
 
+// Asset manager module
+#include "Modules/AssetManager.h"
+
 
 /**
  * The message bus that is used by the AderEngine
@@ -96,6 +99,13 @@ public:
      */
     Memory::reference<SceneManager> scenes();
 
+    /**
+     * Get the reference to the asset manager module
+     *
+     * @return Memory::reference<AssetManager> of the engine's asset manager module
+     */
+    Memory::reference<AssetManager> assets();
+
 	// Inherited via ModuleSystem
 	virtual std::vector<MessageBus::ModuleEntry> getModules() override;
 	virtual MessageBus* getMBImplementation() override;
@@ -106,4 +116,5 @@ private:
     Memory::reference<GLContext> m_glContext;
     Memory::reference<InputInterface> m_inputInterface;
     Memory::reference<SceneManager> m_sceneManager;
+    Memory::reference<AssetManager> m_assetManager;
 };

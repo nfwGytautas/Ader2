@@ -20,9 +20,9 @@ AderScene::AderScene(AderSceneBase* base, Memory::reference<SharpClass> klass)
 
 AderScene::~AderScene()
 {
-	for (int i = 0; i < m_visuals.size(); i++)
+	for (int i = 0; i < m_objects.size(); i++)
 	{
-		delete m_visuals[i];
+		delete m_objects[i];
 	}
 }
 
@@ -74,12 +74,31 @@ std::vector<Visual*> AderScene::getVisuals()
 	return m_visuals;
 }
 
-Visual* AderScene::newVisual()
+void AderScene::addVisual(Visual* visual)
 {
-	// Create new visual, add it to the visuals vector and return
-	Visual* visual = new Visual();
-	visual->VAO = new VAO();
-	visual->Shader = new Shader();
 	m_visuals.push_back(visual);
-	return visual;
+}
+
+void AderScene::removeVisual(Visual* visual)
+{
+	// Get the visual iterator
+	auto& it = std::find(m_visuals.begin(), m_visuals.end(), visual);
+
+	if (it != m_visuals.end())
+	{
+		// Remove the visual
+		m_visuals.erase(it);
+	}
+	else
+	{
+		LOG_WARN("Trying to remove already removed visual!");
+	}
+}
+
+GameObject* AderScene::newGameObject()
+{
+	// Create new instance, add it to the objects list and return it
+	GameObject* go = new GameObject(this);
+	m_objects.push_back(go);
+	return go;
 }
