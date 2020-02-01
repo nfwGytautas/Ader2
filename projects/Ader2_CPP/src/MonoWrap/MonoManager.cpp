@@ -834,6 +834,11 @@ MonoObject* SharpClass::createInstance()
 	return mono_object_new(m_pDomain, m_pClass);
 }
 
+MonoObject* SharpClass::boxValue(void* value)
+{
+	return mono_value_box(m_pDomain, m_pClass, value);
+}
+
 bool SharpClass::loaded()
 {
 	return m_pClass != nullptr;
@@ -1122,4 +1127,9 @@ std::string SharpUtility::methodSignature(const std::string& nSpace, const std::
 		(isStatic ? "::" : ":") + 
 		method + 
 		(params.length() > 0 ? "(" + params + ")" : "");
+}
+
+void* SharpUtility::unboxValue(MonoObject* object)
+{
+	return mono_object_unbox(object);
 }

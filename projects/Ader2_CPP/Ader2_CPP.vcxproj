@@ -167,6 +167,7 @@ IF EXIST ..\..\res\ (xcopy /Q /E /Y /I ..\..\res ..\..\out\bin\Dist-windows-x86_
     <ClInclude Include="src\ModuleSystem\ModuleSystem.h" />
     <ClInclude Include="src\Modules\AssetManager.h" />
     <ClInclude Include="src\Modules\InputInterface.h" />
+    <ClInclude Include="src\Modules\PreRender.h" />
     <ClInclude Include="src\Modules\SceneManager.h" />
     <ClInclude Include="src\MonoWrap\GLUE\AderEngineSharp.h" />
     <ClInclude Include="src\MonoWrap\GLUE\AderScene.h" />
@@ -185,6 +186,7 @@ IF EXIST ..\..\res\ (xcopy /Q /E /Y /I ..\..\res ..\..\out\bin\Dist-windows-x86_
     <ClCompile Include="src\ModuleSystem\ModuleSystem.cpp" />
     <ClCompile Include="src\Modules\AssetManager.cpp" />
     <ClCompile Include="src\Modules\InputInterface.cpp" />
+    <ClCompile Include="src\Modules\PreRender.cpp" />
     <ClCompile Include="src\Modules\SceneManager.cpp" />
     <ClCompile Include="src\MonoWrap\GLUE\AderEngineSharp.cpp" />
     <ClCompile Include="src\MonoWrap\GLUE\AderScene.cpp" />

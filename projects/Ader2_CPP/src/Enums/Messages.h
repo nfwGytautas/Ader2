@@ -32,6 +32,12 @@ namespace Messages
 		msg_SystemRender = 2,
 
 		/**
+		 * This message is sent every frame before SystemRender and instructs the
+		 * the engine to compute the objects to render.
+		 */
+		msg_SystemPreRender = 3,
+
+		/**
 		 * This message is used to request a window creation additional messages
 		 * will then be sent by the specif window module that will create the window.
 		 */

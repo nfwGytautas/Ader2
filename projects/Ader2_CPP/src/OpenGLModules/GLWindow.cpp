@@ -35,6 +35,13 @@ int GLWindow::onMessage(MessageBus::MessageType msg, MessageBus::DataType pData)
 
 int GLWindow::setup()
 {
+	// Set error callback
+	glfwSetErrorCallback(
+		[](int errCode, const char* msg)
+	{
+		LOG_ERROR("GLFW error:\n Code: {0} \n Message: {1}", errCode, msg);
+	});
+
 	// Initialize GLFW
 	if (glfwInit() != GLFW_TRUE)
 	{
@@ -45,6 +52,9 @@ int GLWindow::setup()
 	// Set OpenGL version to 4.3
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
+	// Debug mode for OpenGL
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
 
 	// Core profile
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);

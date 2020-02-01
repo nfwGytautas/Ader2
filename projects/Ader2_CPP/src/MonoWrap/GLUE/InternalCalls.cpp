@@ -153,6 +153,22 @@ void GOsetVisual(GameObject* gObject, Visual* visual)
 	return gObject->setVisual(visual);
 }
 
+#define CONC(A, B) CONC_(A, B)
+#define CONC_(A, B) A##B
+
+#define go_set_get_def(prop, name, postfix, type) \
+void CONC(GOget,name)(GameObject* gObject, type* value)\
+{\
+	*value = CONC(gObject->CONC(get, prop), CONC(name, postfix));\
+}\
+void CONC(GOset,name)(GameObject* gObject, type* value)\
+{\
+	CONC(gObject->CONC(set, prop), CONC(name, postfix)) = *value;\
+}
+
+go_set_get_def(Transform()., Position, , glm::vec3)
+go_set_get_def(Transform()., Rotation, , glm::vec3)
+go_set_get_def(Transform()., Scale, , glm::vec3)
 
 
 void AderInternals::addInternals()
@@ -190,4 +206,13 @@ void AderInternals::addInternals()
 	// Add game object internals
 	mono_add_internal_call("Ader2.GameObject::__getVisual(intptr)", GOgetVisual);
 	mono_add_internal_call("Ader2.GameObject::__setVisual(intptr,intptr)", GOsetVisual);
+	mono_add_internal_call("Ader2.GameObject::__getPosition(intptr,Ader2.Core.Vector3&)", GOgetPosition);
+	mono_add_internal_call("Ader2.GameObject::__setPosition(intptr,Ader2.Core.Vector3&)", GOsetPosition);
+
+	mono_add_internal_call("Ader2.GameObject::__getRotation(intptr,Ader2.Core.Vector3&)", GOgetRotation);
+	mono_add_internal_call("Ader2.GameObject::__setRotation(intptr,Ader2.Core.Vector3&)", GOsetRotation);
+
+	mono_add_internal_call("Ader2.GameObject::__getScale(intptr,Ader2.Core.Vector3&)", GOgetScale);
+	mono_add_internal_call("Ader2.GameObject::__setScale(intptr,Ader2.Core.Vector3&)", GOsetScale);
+
 }

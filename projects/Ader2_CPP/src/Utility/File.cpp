@@ -27,7 +27,7 @@ std::string readFile(const std::string& path)
 	// Resize the string and copy file contents
 	result.resize(fileSize);
 	file.read(result.data(), fileSize);
-
+	
 	// Return as string
 	return result;
 }

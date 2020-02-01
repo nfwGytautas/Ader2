@@ -34,8 +34,12 @@ void GameObject::setVisual(Visual* visual)
 		}
 		else
 		{
+			// Get numeric index in the vector
+			int index = it - m_pVisual->Objects.begin();
+
 			// Remove entry
 			m_pVisual->Objects.erase(it);
+			m_pVisual->Render.erase(m_pVisual->Render.begin() + index);
 
 			// Check if there are any game objects left
 			if (m_pVisual->Objects.size() <= 0)
@@ -58,4 +62,52 @@ void GameObject::setVisual(Visual* visual)
 
 	// Add this game object to the visual batch
 	m_pVisual->Objects.push_back(this);
+	m_pVisual->Render.push_back(true);
+}
+
+glm::mat4 GameObject::getTransformation()
+{
+	// Initialize empty matrix
+	glm::mat4 transformation = glm::mat4(1);
+	
+	// Apply transform
+	transformation = glm::translate(transformation, m_transform.Position);
+
+	// Apply rotation
+	transformation = glm::rotate(transformation, 
+		glm::radians(m_transform.Rotation.x), 
+		glm::vec3(1.0f, 0.0f, 0.0f));
+
+	transformation = glm::rotate(transformation,
+		glm::radians(m_transform.Rotation.y),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+
+	transformation = glm::rotate(transformation,
+		glm::radians(m_transform.Rotation.z),
+		glm::vec3(0.0f, 0.0f, 1.0f));
+
+	// Apply scaling
+	transformation = glm::scale(transformation, m_transform.Scale);
+
+	// Set transform update
+	m_transformUpdate = false;
+
+	// Return result
+	return transformation;
+}
+
+bool GameObject::transformChanged()
+{
+	return m_transformUpdate;
+}
+
+const Transform& GameObject::getTransform() const
+{
+	return m_transform;
+}
+
+Transform& GameObject::setTransform()
+{
+	m_transformUpdate = true;
+	return m_transform;
 }

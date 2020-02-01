@@ -72,6 +72,28 @@ int GLContext::initContext(GLFWwindow* pWindow)
         return 1;
     }
 
+    // OpenGL error callback
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(
+        [](
+            GLenum source,
+            GLenum type,
+            GLuint id,
+            GLenum severity,
+            GLsizei length,
+            const GLchar* message,
+            const void* userParam)
+    {
+
+        if (type == GL_DEBUG_TYPE_ERROR)
+        {
+            LOG_ERROR("OpenGL error: \n\
+                Source: {0}\n\
+                Message: {1}", source, message);
+        }
+
+    }, 0);
+
     // Set the render target
     m_pRenderTarget = pWindow;
 
@@ -101,14 +123,18 @@ int GLContext::render()
         // Bind the specific data
         visual->VAO->bind();
         visual->Shader->bind();
-
+        
         // Bind textures to their slots
         for (auto& it : visual->Textures)
         {
             it.second->bind(it.first);
         }
-
-        visual->VAO->render();
+        
+        // Create instance buffer
+        visual->VAO->createInstanceBuffer(visual->Transforms, true);
+        
+        // Render using instancing
+        visual->VAO->renderInstance(visual->RenderCount);
     }
 
     // Swap window buffers
@@ -127,6 +153,12 @@ VAO::VAO()
 {
     // Create vertex array
     glGenVertexArrays(1, &m_idArray);
+
+    // Assign VBO types
+    m_idIndices.Type = GL_ELEMENT_ARRAY_BUFFER;
+    m_idVertices.Type = GL_ARRAY_BUFFER;
+    m_idTexCoords.Type = GL_ARRAY_BUFFER;
+    m_idInstance.Type = GL_ARRAY_BUFFER;
 }
 
 VAO::~VAO()
@@ -138,12 +170,13 @@ VAO::~VAO()
     deleteBuffer(m_idIndices);
     deleteBuffer(m_idVertices);
     deleteBuffer(m_idTexCoords);
+    deleteBuffer(m_idInstance);
 }
 
 void VAO::render()
 {
     // If indices array is set render with glDrawElements else glDrawArrays
-    if (m_idIndices == 0)
+    if (m_idIndices.ID == 0)
     {
         glDrawArrays(GL_TRIANGLES, 0, m_renderCount);
     }
@@ -153,21 +186,29 @@ void VAO::render()
     }
 }
 
+void VAO::renderInstance(unsigned int count)
+{
+    // If indices array is set render with glDrawElements else glDrawArrays
+    if (m_idIndices.ID == 0)
+    {
+        glDrawArraysInstanced(GL_TRIANGLES, 0, m_renderCount, count);
+    }
+    else
+    {
+        glDrawElementsInstanced(GL_TRIANGLES, m_renderCount, GL_UNSIGNED_INT, 0, count);
+    }
+}
+
 void VAO::createIndiceBuffer(std::vector<unsigned int>& indices, bool dynamic)
 {
-    // Delete previous buffer
-    deleteBuffer(m_idIndices);
-
-    // Create buffer and add to buffers vector
-    glGenBuffers(1, &m_idIndices);
-
-    // Bind the buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idIndices);
-
-    // Add buffer data
-    if (!dynamic)
+    if (setupBuffer(
+        m_idIndices,
+        dynamic,
+        sizeof(unsigned int),
+        indices.size(),
+        indices.data()))
     {
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+        // No need for attributes
     }
 
     // Set render count
@@ -176,70 +217,84 @@ void VAO::createIndiceBuffer(std::vector<unsigned int>& indices, bool dynamic)
 
 void VAO::createVerticesBuffer(std::vector<float>& vertices, bool dynamic)
 {
-    // Delete previous buffer
-    deleteBuffer(m_idVertices);
+    if (setupBuffer(
+        m_idVertices,
+        dynamic,
+        sizeof(float),
+        vertices.size(),
+        vertices.data()))
+    {
+        // Assign attrib pointer
+        glVertexAttribPointer(
+            al_Vertices,
+            3,
+            GL_FLOAT,
+            false,
+            3 * sizeof(float),
+            (const void*)0
+        );
+    }
 
-    // Set render count
-    if (m_idVertices != 0)
+    // Set render count but don't override it if there is an indices buffer
+    if (m_idVertices.ID != 0 && m_idIndices.ID == 0)
     {
         m_renderCount = vertices.size() / 3;
     }
-
-    // Create buffer and add to buffers vector
-    glGenBuffers(1, &m_idVertices);
-
-    // Bind the buffer
-    glBindBuffer(GL_ARRAY_BUFFER, m_idVertices);
-
-    // Add buffer data
-    if (!dynamic)
-    {
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-    }
-
-    // Assign attrib pointer
-    glVertexAttribPointer(
-        al_Vertices,
-        3,
-        GL_FLOAT,
-        false, 
-        3 * sizeof(float),
-        (const void*)0
-    );
-
-    // Unbind buffer
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void VAO::createUVBuffer(std::vector<float>& texCoords, bool dynamic)
 {
-    // Delete previous buffer
-    deleteBuffer(m_idTexCoords);
-
-    // Create buffer and add to buffers vector
-    glGenBuffers(1, &m_idTexCoords);
-
-    // Bind the buffer
-    glBindBuffer(GL_ARRAY_BUFFER, m_idTexCoords);
-
-    // Add buffer data
-    if (!dynamic)
+    if (setupBuffer(
+        m_idTexCoords, 
+        dynamic, 
+        sizeof(float), 
+        texCoords.size(), 
+        texCoords.data()))
     {
-        glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(float), texCoords.data(), GL_STATIC_DRAW);
+        // Assign attrib pointer
+        glVertexAttribPointer(
+            al_TexCoord,
+            2,
+            GL_FLOAT,
+            false,
+            2 * sizeof(float),
+            (const void*)0
+        );
     }
+}
 
-    // Assign attrib pointer
-    glVertexAttribPointer(
-        al_TexCoord,
-        2,
-        GL_FLOAT,
-        false,
-        2 * sizeof(float),
-        (const void*)0
-    );
+void VAO::createInstanceBuffer(std::vector<glm::mat4>& transforms, bool dynamic)
+{
+    if (setupBuffer(
+        m_idInstance,
+        dynamic,
+        sizeof(glm::mat4),
+        transforms.size(),
+        transforms.data()))
+    {
+        // Since OpenGL vertex attribute max size is vec4 in order
+        // to have a mat4 we need 4 attributes since a mat4 is just
+        // 4 vec4
 
-    // Unbind buffer
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glEnableVertexAttribArray(al_Instance0);
+        glVertexAttribPointer(al_Instance0, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+                                                                   
+        glEnableVertexAttribArray(al_Instance1);                   
+        glVertexAttribPointer(al_Instance1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+                                                                   
+        glEnableVertexAttribArray(al_Instance2);                   
+        glVertexAttribPointer(al_Instance2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+                                                                   
+        glEnableVertexAttribArray(al_Instance3);                   
+        glVertexAttribPointer(al_Instance3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+        // Since this is used for instancing we define their divisors
+        // to be 1 each meaning it will be incremented by 1 each instance draw
+        glVertexAttribDivisor(al_Instance0, 1);
+        glVertexAttribDivisor(al_Instance1, 1);
+        glVertexAttribDivisor(al_Instance2, 1);
+        glVertexAttribDivisor(al_Instance3, 1);
+    }
 }
 
 void VAO::bind() const
@@ -250,24 +305,135 @@ void VAO::bind() const
     glBindVertexArray(m_idArray);
 
     // Enable vertex attribute arrays
-    if (m_idVertices)
+    if (m_idVertices.ID)
     {
         glEnableVertexAttribArray(al_Vertices);
     }
 
-    if (m_idTexCoords)
+    if (m_idTexCoords.ID)
     {
         glEnableVertexAttribArray(al_TexCoord);
     }
+
+    if (m_idInstance.ID)
+    {
+        glEnableVertexAttribArray(al_Instance0);
+        glEnableVertexAttribArray(al_Instance1);
+        glEnableVertexAttribArray(al_Instance2);
+        glEnableVertexAttribArray(al_Instance3);
+    }
 }
 
-void VAO::deleteBuffer(unsigned int& buffer)
+bool VAO::setupBuffer(VBO& buffer, bool dynamic, size_t eSize, size_t eCount, void* pData)
+{
+    // Bind this VAO
+    bind();
+
+    // Check if the buffer is created first
+    if (buffer.ID == 0)
+    {
+        // Create buffer
+        createBuffer(buffer);
+
+        // Bind the buffer
+        glBindBuffer(buffer.Type, buffer.ID);
+
+        // Set the type of the buffer object
+        buffer.Dynamic = dynamic;
+
+        // Allocate buffer
+        allocBuffer(buffer, eSize, eCount, pData);
+
+        // Set up attributes
+        return true;
+    }
+    else
+    {
+        // Bind the buffer
+        glBindBuffer(buffer.Type, buffer.ID);
+    }
+
+    // If there is mismatch between dynamic and static buffer we
+    // have to reallocate it with the correct format
+    if (buffer.Dynamic != dynamic)
+    {
+        // Set the type of the buffer object
+        buffer.Dynamic = dynamic;
+
+        // Allocate buffer
+        allocBuffer(buffer, eSize, eCount, pData);
+
+        // VBO was created so attributes should have been created already
+        return false;
+    }
+
+    // Check if the buffer was dynamic or not if it was we don't
+    // want to delete the buffer but just change it's data
+    if (buffer.Dynamic)
+    {
+        // This will modify the data of the buffer or reallocate it
+        // if it is too small
+        modifyBuffer(buffer, eSize, eCount, pData);
+
+        // VBO was created so attributes should have been created already
+        return false;
+    }
+    else
+    {
+        // Allocate new static buffer memory
+        allocBuffer(buffer, eSize, eCount, pData);
+
+        // VBO was created so attributes should have been created already
+        return false;
+    }
+
+    // Should not reach this point
+    return false;
+}
+
+void VAO::deleteBuffer(VBO& buffer)
 {
     // Check that the buffer is valid and then delete it
-    if (buffer != 0)
+    if (buffer.ID != 0)
     {
-        glDeleteBuffers(1, &buffer);
+        glDeleteBuffers(1, &buffer.ID);
+        buffer.Size = 0;
     }
+}
+
+void VAO::createBuffer(VBO& vbo)
+{
+    // Create buffer and add to buffers vector
+    glGenBuffers(1, &vbo.ID);
+}
+
+void VAO::allocBuffer(VBO& vbo, size_t eSize, size_t eCount, void* pInitData)
+{
+    // Add buffer data
+    glBufferData(vbo.Type, eCount * eSize, pInitData, vbo.Dynamic ? GL_STREAM_DRAW : GL_STATIC_DRAW);
+    vbo.Size = eCount * eSize;
+}
+
+void VAO::modifyBuffer(VBO& vbo, size_t eSize, size_t eCount, void* pData)
+{
+    // Check size of buffer
+    if (vbo.Size < eSize * eCount)
+    {
+        // Allocate buffer since the previous one was too small
+        allocBuffer(vbo, eSize, eCount, pData);
+
+        // Do nothing else
+        return;
+    }
+
+    // Map buffer and get it's contents pointer
+    void* ptr = glMapBuffer(vbo.Type, GL_WRITE_ONLY);
+
+    // Copy new data and don't change the size variable
+    memcpy(ptr, pData, eSize * eCount);
+
+    // Unmap the buffer
+    glUnmapBuffer(vbo.Type);
 }
 
 Shader::Shader()

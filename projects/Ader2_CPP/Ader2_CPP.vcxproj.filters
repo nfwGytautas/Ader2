@@ -91,6 +91,7 @@
     </ClInclude>
     <ClInclude Include="src\Modules\AssetManager.h" />
     <ClInclude Include="src\CommonTypes\Asset.h" />
+    <ClInclude Include="src\Modules\PreRender.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AderEngine.cpp" />
@@ -136,5 +137,6 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Modules\AssetManager.cpp" />
     <ClCompile Include="src\GameCore\GameObject.cpp" />
+    <ClCompile Include="src\Modules\PreRender.cpp" />
   </ItemGroup>
 </Project>

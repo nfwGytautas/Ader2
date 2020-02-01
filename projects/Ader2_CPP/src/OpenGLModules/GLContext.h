@@ -23,6 +23,11 @@ struct GameObject;
 // Graphics types are assets
 #include "CommonTypes/Asset.h"
 
+// GLM
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 /**
  * This module provides a OpenGL based hardware acceleration for the engine
@@ -102,6 +107,27 @@ private:
     {
         al_Vertices = 0,
         al_TexCoord = 1,
+
+        // For storing transformation matrices during instance rendering
+        al_Instance0 = 3,
+        al_Instance1 = 4,
+        al_Instance2 = 5,
+        al_Instance3 = 6,
+    };
+
+    struct VBO
+    {
+        /// ID of the VBO
+        unsigned int ID = 0;
+
+        /// Allocated buffer size in bytes
+        size_t Size = 0;
+
+        /// Dynamic or not
+        bool Dynamic = false;
+
+        /// Type of the VBO
+        int Type = -1;
     };
 public:
     /**
@@ -111,7 +137,15 @@ public:
 
     ~VAO();
 
+    /**
+     * Render this VAO
+     */
     void render();
+
+    /**
+     * Render this VAO count amount of times using instancing
+     */
+    void renderInstance(unsigned int count);
 
     /**
      * Create indices array for this array with the specified indices buffer
@@ -141,19 +175,70 @@ public:
     void createUVBuffer(std::vector<float>& texCoords, bool dynamic);
 
     /**
+     * Create transformation matrix instance buffer from the specified data
+     *
+     * @param transforms Vector containing transformation data
+     * @param dynamic Boolean specifying if the vertices buffer will be changed
+     *                during runtime
+     */
+    void createInstanceBuffer(std::vector<glm::mat4>& transforms, bool dynamic);
+
+    /**
      * Bind this VAO to the current OpenGL state machine.
      */
     void bind() const;
 
 private:
-    // Deletes the specified buffer
-    void deleteBuffer(unsigned int& buffer);
+    /**
+     * Setup up the buffer and return if the buffer attributes need to
+     * be setup
+     *
+     * @param vbo VBO to operate on
+     * @param dynamic Is the buffer dynamic or not
+     * @param eSize Size of a single element
+     * @param eCount Count of elements
+     * @param pData Data to of the buffer
+     *
+     * @return True if buffer attributes need to be setup, false otherwise
+     */
+    bool setupBuffer(VBO& buffer, bool dynamic, size_t eSize, size_t eCount, void* pData);
+
+    /**
+     * Deletes the specified buffer
+     */
+    void deleteBuffer(VBO& buffer);
+
+    /**
+     * Create buffer
+     */
+    void createBuffer(VBO& vbo);
+
+    /**
+     * Allocate a vertex buffer object of the specified size with specified init data and use
+     *
+     * @param vbo VBO to operate on
+     * @param eSize Size of a single element
+     * @param eCount Count of elements
+     * @param pInitData Data to init the buffer with
+     */
+    void allocBuffer(VBO& vbo, size_t eSize, size_t eCount, void* pInitData);
+
+    /**
+     * Change buffer contents with the specified data
+     *
+     * @param vbo VBO to operate on
+     * @param eSize Size of a single element
+     * @param eCount Count of elements
+     * @param pData Data to of the buffer
+     */
+    void modifyBuffer(VBO& vbo, size_t eSize, size_t eCount, void* pData);
 private:
     unsigned int m_idArray = 0;
 
-    unsigned int m_idIndices = 0;
-    unsigned int m_idVertices = 0;
-    unsigned int m_idTexCoords = 0;
+    VBO m_idIndices;
+    VBO m_idVertices;
+    VBO m_idTexCoords;
+    VBO m_idInstance;
 
     unsigned int m_renderCount = 0;
 };

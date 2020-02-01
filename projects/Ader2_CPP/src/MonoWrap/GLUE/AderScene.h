@@ -21,6 +21,22 @@ struct Visual : public Asset
     /// Objects using this visual
     std::vector<GameObject*> Objects;
 
+    /// Vector containing transforms of game objects
+    std::vector<glm::mat4> Transforms;
+
+    /**
+     * Vector containing true or false that signalizes the engine
+     * if the game object should be updated and rendered. This is
+     * determined by doing a bunch of optimization operations before
+     * rendering some of these are, checking if the game object is
+     * visible, if it is in the view of the camera (frustum culling),
+     * if it is not behind other objects (occlusion culling).
+     */
+    std::vector<bool> Render;
+
+    /// The number of true entries in the Render vector
+    size_t RenderCount = 0;
+
     /// Reference to the vertex array of this visual
     VAO* VAO;
 

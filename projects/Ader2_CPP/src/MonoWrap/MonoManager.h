@@ -330,6 +330,8 @@ private:
  * This wrapper provides:
  *  -A way to get all classes that exist in the assembly.
  *  -A way to get a specific class by its name
+ *  -A way to get a specific type by its name
+ *  -A way to get all types in the assembly
  *  -A way to get the name of the assembly
  */
 class SharpAssembly
@@ -403,6 +405,7 @@ private:
  *  -A way to create a field from this class
  *  -A way to get a property from this class
  *  -A way to get all custom attributes of the class
+ *  -A way to box a value into the specified class instance
  */
 class SharpClass
 {
@@ -532,6 +535,11 @@ public:
      * Creates a MonoObject pointer from this class
      */
     MonoObject* createInstance();
+
+    /**
+     * Box the specified value into a MonoObject*
+     */
+    MonoObject* boxValue(void* value);
 
     /**
      * Returns true if the class was loaded correctly
@@ -892,4 +900,9 @@ public:
                                        const std::string& method,
                                        const std::string& params,
                                        bool isStatic = false);
+
+    /**
+     * Unboxes the specified object and returns it as a void*
+     */
+    static void* unboxValue(MonoObject* object);
 };

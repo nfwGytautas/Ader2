@@ -68,6 +68,9 @@ int main()
 		// Update the system
 		aEngine.postMessage(Messages::msg_SystemUpdate);
 
+		// Prepare for rendering
+		aEngine.postMessage(Messages::msg_SystemPreRender);
+
 		// Render the system
 		aEngine.postMessage(Messages::msg_SystemRender);
 
@@ -82,7 +85,7 @@ int main()
 		frameTime = timer.microseconds() / 1000 / 1000;
 
 		// Output frame time and FPS
-		//std::cout << "Frame time: " << frameTime << " s, " << 60 / frameTime << "FPS\r";
+		std::cout << "Frame time: " << frameTime << " s, " << 60 / frameTime << "FPS\r";
 	}
 
 	// Shutdown the engine

@@ -27,6 +27,9 @@
 // Asset manager module
 #include "Modules/AssetManager.h"
 
+// Pre render module
+#include "Modules/PreRender.h"
+
 
 /**
  * The message bus that is used by the AderEngine
@@ -106,6 +109,13 @@ public:
      */
     Memory::reference<AssetManager> assets();
 
+    /**
+     * Get the reference to the pre render module
+     *
+     * @return Memory::reference<PreRender> of the engine's pre render module
+     */
+    Memory::reference<PreRender> preRender();
+
 	// Inherited via ModuleSystem
 	virtual std::vector<MessageBus::ModuleEntry> getModules() override;
 	virtual MessageBus* getMBImplementation() override;
@@ -117,4 +127,5 @@ private:
     Memory::reference<InputInterface> m_inputInterface;
     Memory::reference<SceneManager> m_sceneManager;
     Memory::reference<AssetManager> m_assetManager;
+    Memory::reference<PreRender> m_preRender;
 };
