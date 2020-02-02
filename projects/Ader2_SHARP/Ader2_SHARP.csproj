@@ -62,6 +62,7 @@
     <Compile Include="src\Core\VAO.cs" />
     <Compile Include="src\User\AderScene.cs" />
     <Compile Include="src\User\AderScript.cs" />
+    <Compile Include="src\User\Camera.cs" />
     <Compile Include="src\User\GameObject.cs" />
     <Compile Include="src\User\Visual.cs" />
   </ItemGroup>

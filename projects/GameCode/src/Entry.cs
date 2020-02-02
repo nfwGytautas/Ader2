@@ -72,21 +72,30 @@ namespace Scripts
             vis.SetTexture(0, tex);
 
             Console.WriteLine("Creating game object!");
+            int x = 0;
             int y = 0;
             Random rnd = new Random();
             for(int i = 0; i < 100000; i++)
             {
-                GameObject go = NewGameObject();
-                go.Position = new Vector3(i, y, 0);
+                GameObject go = this.NewGameObject();
+                go.Position = new Vector3(x++ - 40, y - 20, 0);
                 go.Visual = vis;
 
                 go.Rotation = new Vector3(0, 0, rnd.Next(360));
 
-                if (i % 20 == 0)
+                if (x % 80 == 0)
                 {
+                    x = 0;
                     y++;
                 }
             }
+
+            Console.WriteLine("Creating camera!");
+            Camera camera = this.NewCamera();
+            camera.Rotation = new Vector3(0, -90, 0);
+            camera.Position = new Vector3(0, 0, 50);
+
+            this.ActiveCamera = camera;
         }
     }
 

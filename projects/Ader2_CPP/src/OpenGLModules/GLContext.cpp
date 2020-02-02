@@ -12,7 +12,9 @@
 // Assert
 #include "Defs.h"
 
-
+GLContext::GLContext()
+{
+}
 
 bool GLContext::canShutdown()
 {
@@ -21,6 +23,11 @@ bool GLContext::canShutdown()
 
 void GLContext::shutdown()
 {
+    // Delete UBOs
+    if (m_pubMatrices)
+    {
+        delete m_pubMatrices;
+    }
 }
 
 int GLContext::onMessage(MessageBus::MessageType msg, MessageBus::DataType pData)
@@ -97,18 +104,41 @@ int GLContext::initContext(GLFWwindow* pWindow)
     // Set the render target
     m_pRenderTarget = pWindow;
 
+    // We can now create our UBO's
+    m_pubMatrices = new UniformBuffer(UniformBuffer::bp_Mat);
+
     return 0;
 }
 
 int GLContext::wndStateUpdate()
 {
+    // Check for resizing
     if (m_pWndState->resized)
     {
-        // Set the view port
-        glViewport(0, 0, m_pWndState->width, m_pWndState->height);
+        wndResized();
     }
 
     return 0;
+}
+
+void GLContext::wndResized()
+{
+    // Set the view port
+    glViewport(0, 0, m_pWndState->width, m_pWndState->height);
+
+    // Recalculate projection matrix
+    m_projection = glm::perspective(
+        glm::radians(m_settings.FoV),
+        (float)m_pWndState->width / (float)m_pWndState->height,
+        m_settings.NearPlane,
+        m_settings.FarPlane);
+
+
+    // Construct matrices uniform buffer
+    m_pubMatrices->bind();
+
+    // Set the projection matrix
+    m_pubMatrices->setSubData(0, sizeof(glm::mat4), glm::value_ptr(m_projection));
 }
 
 int GLContext::render()
@@ -117,22 +147,28 @@ int GLContext::render()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // Construct matrices uniform buffer
+    m_pubMatrices->bind();
+
+    // Set the view matrix
+    m_pubMatrices->setSubData(sizeof(glm::mat4), sizeof(glm::mat4), (void*)glm::value_ptr(m_activeScene->getActiveCamera()->getViewMatrix()));
+
     // Loop over each visual
     for (Visual* visual : m_activeScene->getVisuals())
     {
         // Bind the specific data
         visual->VAO->bind();
         visual->Shader->bind();
-        
+
         // Bind textures to their slots
         for (auto& it : visual->Textures)
         {
             it.second->bind(it.first);
         }
-        
+
         // Create instance buffer
         visual->VAO->createInstanceBuffer(visual->Transforms, true);
-        
+
         // Render using instancing
         visual->VAO->renderInstance(visual->RenderCount);
     }
@@ -621,4 +657,79 @@ void Texture::loadTexture()
 
     // Generate mip maps
     glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+UniformBuffer::UniformBuffer()
+{
+    glGenBuffers(1, &m_idUBO);
+}
+
+UniformBuffer::UniformBuffer(BoundPoints bp)
+    : UniformBuffer()
+{
+    // Bind first
+    bind();
+
+    // Allocate
+    allocBP(bp);
+}
+
+void UniformBuffer::bind()
+{
+    // Bind the buffer
+    glBindBuffer(GL_UNIFORM_BUFFER, m_idUBO);
+}
+
+void UniformBuffer::allocBP(BoundPoints bp)
+{
+    // Get the size of the bound point
+    m_size = getBPSize(bp);
+
+    // Check if size is 0
+    if (m_size == 0)
+    {
+        LOG_WARN("Allocating 0 size uniform buffer!");
+    }
+
+    // Allocate data
+    glBufferData(GL_UNIFORM_BUFFER, m_size, NULL, GL_STATIC_DRAW);
+
+    // Bind buffer range
+    glBindBufferRange(GL_UNIFORM_BUFFER, bp, m_idUBO, 0, m_size);
+}
+
+void UniformBuffer::setSubData(const size_t& offset, const size_t& size, void* pValue)
+{
+    // Check if the buffer is large enough
+    if (m_size < offset + size)
+    {
+        LOG_ERROR("UBO overflow caught, no updates applied!");
+        return;
+    }
+
+    // Set sub data
+    glBufferSubData(GL_UNIFORM_BUFFER, offset, size, pValue);
+}
+
+void UniformBuffer::mapData(void* pData)
+{
+    // Map buffer and get it's contents pointer
+    void* ptr = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+
+    // Copy new data
+    memcpy(ptr, pData, m_size);
+
+    // Unmap the buffer
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+}
+
+size_t UniformBuffer::getBPSize(BoundPoints bp)
+{
+    switch (bp)
+    {
+    case bp_Mat:
+        return 2 * sizeof(glm::mat4);
+    }
+
+    return 0;
 }

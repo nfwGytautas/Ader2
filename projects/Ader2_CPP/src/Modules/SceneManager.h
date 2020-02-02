@@ -20,6 +20,7 @@
  *  - LoadCurrentScene
  *  - ReloadSceneShaders
  *  - TransmitScenes
+ *  - SystemUpdate
  *
  * Posts:
  *  - SceneChanged
@@ -69,6 +70,11 @@ private:
      * Set scene vector to the one received from the MonoManager
      */
     void transmitScenes(MessageBus::DataType pData);
+
+    /**
+     * Update scenes and scene manager
+     */
+    void update();
 private:
     /// Starting scene of the game marked with StartScene attribute in cs
     Memory::reference<AderScene> m_startScene = nullptr;

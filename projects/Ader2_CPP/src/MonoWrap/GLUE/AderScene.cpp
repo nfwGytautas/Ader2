@@ -20,9 +20,25 @@ AderScene::AderScene(AderSceneBase* base, Memory::reference<SharpClass> klass)
 
 AderScene::~AderScene()
 {
+	// Delete game objects
 	for (int i = 0; i < m_objects.size(); i++)
 	{
 		delete m_objects[i];
+	}
+
+	// Delete cameras
+	for (int i = 0; i < m_cameras.size(); i++)
+	{
+		delete m_cameras[i];
+	}
+}
+
+void AderScene::update()
+{
+	// Update cameras
+	for (Camera* cam : m_cameras)
+	{
+		cam->update();
 	}
 }
 
@@ -101,4 +117,22 @@ GameObject* AderScene::newGameObject()
 	GameObject* go = new GameObject(this);
 	m_objects.push_back(go);
 	return go;
+}
+
+Camera* AderScene::newCamera()
+{
+	// Create new instance, add it to the cameras list and return it
+	Camera* cam = new Camera(this);
+	m_cameras.push_back(cam);
+	return cam;
+}
+
+Camera* AderScene::getActiveCamera()
+{
+	return m_pActiveCamera;
+}
+
+void AderScene::setActiveCamera(Camera* pCamera)
+{
+	m_pActiveCamera = pCamera;
 }

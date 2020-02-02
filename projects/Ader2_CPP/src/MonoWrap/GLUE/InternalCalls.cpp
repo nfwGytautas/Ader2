@@ -141,6 +141,20 @@ GameObject* ScenenewGameObject(AderScene* scene)
 	return scene->newGameObject();
 }
 
+Camera* ScenenewCamera(AderScene* scene)
+{
+	return scene->newCamera();
+}
+
+Camera* ScenegetActiveCamera(AderScene* scene)
+{
+	return scene->getActiveCamera();
+}
+
+void ScenesetActiveCamera(AderScene* scene, Camera* camera)
+{
+	scene->setActiveCamera(camera);
+}
 
 
 Visual* GOgetVisual(GameObject* gObject)
@@ -153,22 +167,57 @@ void GOsetVisual(GameObject* gObject, Visual* visual)
 	return gObject->setVisual(visual);
 }
 
-#define CONC(A, B) CONC_(A, B)
-#define CONC_(A, B) A##B
-
-#define go_set_get_def(prop, name, postfix, type) \
-void CONC(GOget,name)(GameObject* gObject, type* value)\
-{\
-	*value = CONC(gObject->CONC(get, prop), CONC(name, postfix));\
-}\
-void CONC(GOset,name)(GameObject* gObject, type* value)\
-{\
-	CONC(gObject->CONC(set, prop), CONC(name, postfix)) = *value;\
+void GOgetPosition(GameObject* gObject, glm::vec3* value)
+{
+	*value = gObject->getTransform().Position;
 }
 
-go_set_get_def(Transform()., Position, , glm::vec3)
-go_set_get_def(Transform()., Rotation, , glm::vec3)
-go_set_get_def(Transform()., Scale, , glm::vec3)
+void GOsetPosition(GameObject* gObject, glm::vec3* value)
+{
+	gObject->setTransform().Position = *value;
+}
+
+void GOgetRotation(GameObject* gObject, glm::vec3* value)
+{
+	*value = gObject->getTransform().Rotation;
+}
+
+void GOsetRotation(GameObject* gObject, glm::vec3* value)
+{
+	gObject->setTransform().Rotation = *value;
+}
+
+void GOgetScale(GameObject* gObject, glm::vec3* value)
+{
+	*value = gObject->getTransform().Scale;
+}
+
+void GOsetScale(GameObject* gObject, glm::vec3* value)
+{
+	gObject->setTransform().Scale = *value;
+}
+
+
+
+void CameragetPosition(Camera* camera, glm::vec3* value)
+{
+	*value = camera->getPosition();
+}
+
+void CamerasetPosition(Camera* camera, glm::vec3* value)
+{
+	camera->setPosition(*value);
+}
+
+void CameragetRotation(Camera* camera, glm::vec3* value)
+{
+	*value = camera->getRotation();
+}
+
+void CamerasetRotation(Camera* camera, glm::vec3* value)
+{
+	camera->setRotation(*value);
+}
 
 
 void AderInternals::addInternals()
@@ -202,6 +251,9 @@ void AderInternals::addInternals()
 
 	// Add scene internals
 	mono_add_internal_call("Ader2.AderScene::__newGameObject(intptr)", ScenenewGameObject);
+	mono_add_internal_call("Ader2.AderScene::__newCamera(intptr)", ScenenewCamera);
+	mono_add_internal_call("Ader2.AderScene::__getActiveCamera(intptr)", ScenegetActiveCamera);
+	mono_add_internal_call("Ader2.AderScene::__setActiveCamera(intptr,intptr)", ScenesetActiveCamera);
 
 	// Add game object internals
 	mono_add_internal_call("Ader2.GameObject::__getVisual(intptr)", GOgetVisual);
@@ -215,4 +267,9 @@ void AderInternals::addInternals()
 	mono_add_internal_call("Ader2.GameObject::__getScale(intptr,Ader2.Core.Vector3&)", GOgetScale);
 	mono_add_internal_call("Ader2.GameObject::__setScale(intptr,Ader2.Core.Vector3&)", GOsetScale);
 
+	// Add camera internals
+	mono_add_internal_call("Ader2.Camera::__getPosition(intptr,Ader2.Core.Vector3&)", CameragetPosition);
+	mono_add_internal_call("Ader2.Camera::__setPosition(intptr,Ader2.Core.Vector3&)", CamerasetPosition);
+	mono_add_internal_call("Ader2.Camera::__getRotation(intptr,Ader2.Core.Vector3&)", CameragetRotation);
+	mono_add_internal_call("Ader2.Camera::__setRotation(intptr,Ader2.Core.Vector3&)", CamerasetRotation);
 }

@@ -4,6 +4,7 @@
 class VAO;
 class Shader;
 class Texture;
+class UniformBuffer;
 struct AderScene;
 struct GameObject;
 
@@ -30,6 +31,22 @@ struct GameObject;
 
 
 /**
+ * Rendering settings containing, FoV, near and far plance
+ */
+struct RenderSettings
+{
+    /// Field of vision the renderer in degrees
+    float FoV = 45.0f;
+
+    /// Near rendering plane
+    float NearPlane = 0.1f;
+
+    /// Far rendering plane
+    float FarPlane = 100.0f;
+};
+
+
+/**
  * This module provides a OpenGL based hardware acceleration for the engine
  *
  * MODULE
@@ -45,6 +62,8 @@ struct GameObject;
 class GLContext : public Module
 {
 public:
+    GLContext();
+
     // Inherited via Module
     virtual bool canShutdown() override;
 
@@ -74,6 +93,11 @@ private:
     int wndStateUpdate();
 
     /**
+     * Updates viewport and projection matrix when the window is updated
+     */
+    void wndResized();
+
+    /**
      * Called when ever the render message is received
      *
      * @return 0 if there were no errors, otherwise error code
@@ -93,6 +117,15 @@ private:
 
     /// Reference to the current active scene
     Memory::reference<AderScene> m_activeScene;
+
+    /// Current projection matrix of the engine
+    glm::mat4 m_projection;
+
+    /// Current rendering settings of the engine
+    RenderSettings m_settings;
+
+    /// Matrices uniform buffer
+    UniformBuffer* m_pubMatrices = nullptr;
 };
 
 
@@ -317,4 +350,61 @@ private:
     void loadTexture();
 private:
     unsigned int m_idTexture = 0;
+};
+
+
+/**
+ * Uniform buffer is used to provide uniform data to shaders
+ */
+class UniformBuffer
+{
+public:
+    enum BoundPoints
+    {
+        bp_Mat = 0,
+    };
+public:
+    /**
+     * Creates empty uniform buffer
+     */
+    UniformBuffer();
+
+    /**
+     * Creates empty uniform buffer for the specified bound point
+     */
+    UniformBuffer(BoundPoints bp);
+
+    /**
+     * Binds this uniform buffer object, must be called before editing it's data
+     */
+    void bind();
+
+    /**
+     * Allocates memory for the uniform buffer with the size of the 
+     * bounding point
+     */
+    void allocBP(BoundPoints bp);
+
+    /**
+     * Sets the sub data of the buffer from the offset to the specified value
+     */
+    void setSubData(const size_t& offset, const size_t& size, void* pValue);
+
+    /**
+     * Copies the specified data into the uniform buffer, this is the same as
+     * calling setSubData with offset 0, size being the size of the entire data
+     * structure and value being our data
+     */
+    void mapData(void* pData);
+
+    /**
+     * Returns the size in bytes of a buffer bound point
+     */
+    static size_t getBPSize(BoundPoints bp);
+private:
+    /// ID of the uniform buffer
+    unsigned int m_idUBO = 0;
+
+    /// Size allocated for this buffer
+    size_t m_size = 0;
 };

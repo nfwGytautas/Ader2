@@ -61,7 +61,13 @@ int InputInterface::initWindowInput(MessageBus::DataType pWindow)
 	// Cast to GLFW window
 	GLFWwindow* pGLFW = static_cast<GLFWwindow*>(pWindow);
 
+	// Get size of the window
 	glfwGetWindowSize(pGLFW, &m_actualState.WndState.width, &m_actualState.WndState.height);
+
+	// Make sure to init the engine with the initial window size
+	m_actualState.WndState.resized = true;
+	m_msgState = m_actualState;
+	this->postMessage(Messages::msg_WndStateUpdated);
 
 	// Subscribe callbacks
 

@@ -118,7 +118,7 @@ namespace Ader2
 
         /// <summary>
         /// Internal use only
-        /// Returns the C++ instance of the visual
+        /// Returns the C++ instance of the game object
         /// </summary>
         /// <returns>IntPtr to the C++ instance</returns>
         internal IntPtr GetCInstance()

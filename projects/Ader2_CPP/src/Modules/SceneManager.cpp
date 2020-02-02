@@ -35,6 +35,8 @@ int SceneManager::onMessage(MessageBus::MessageType msg, MessageBus::DataType pD
 	case Messages::msg_TransmitScenes:
 		transmitScenes(pData);
 		return 0;
+	case Messages::msg_SystemUpdate:
+		update();
 	}
 
 	return 0;
@@ -135,4 +137,10 @@ void SceneManager::transmitScenes(MessageBus::DataType pData)
 	{
 		LOG_ERROR("Start scene not specified!");
 	}
+}
+
+void SceneManager::update()
+{
+	// Update current scene
+	m_currentScene->update();
 }

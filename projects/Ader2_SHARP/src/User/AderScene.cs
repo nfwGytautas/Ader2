@@ -22,9 +22,36 @@ namespace Ader2
         // Instance of the scene object
         private IntPtr _CInstance;
 
-        // Returns true if asset with given name exists
+        /// <summary>
+        /// Current active camera of this scene
+        /// </summary>
+        public Camera ActiveCamera
+        { 
+            get
+            {
+                return new Camera(__getActiveCamera(_CInstance));
+            }
+            set
+            {
+                __setActiveCamera(_CInstance, value.GetCInstance());
+            }
+        }
+
+        // Creates a new game object
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static IntPtr __newGameObject(IntPtr scene);
+
+        // Creates a new camera
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static IntPtr __newCamera(IntPtr scene);
+
+        // Gets the active camera of the scene
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static IntPtr __getActiveCamera(IntPtr scene);
+
+        // Sets the active camera of the scene
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static void __setActiveCamera(IntPtr scene, IntPtr camera);
 
         /// <summary>
         /// This method should load ALL assets used by the scene
@@ -32,7 +59,7 @@ namespace Ader2
         public abstract void LoadAssets();
 
         /// <summary>
-        /// Creates a new GameObject with the specified Name
+        /// Creates a new GameObject
         /// </summary>
         /// <returns>Game object instance</returns>
         public GameObject NewGameObject()
@@ -40,6 +67,17 @@ namespace Ader2
             // Create a new game object and add it to the scene
             GameObject go = new GameObject(__newGameObject(_CInstance));
             return go;
+        }
+
+        /// <summary>
+        /// Creates a new Camera
+        /// </summary>
+        /// <returns>Game object instance</returns>
+        public Camera NewCamera()
+        {
+            // Create a new camera and add it to the scene
+            Camera cam = new Camera(__newCamera(_CInstance));
+            return cam;
         }
 
         /// <summary>

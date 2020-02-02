@@ -163,6 +163,7 @@ IF EXIST ..\..\res\ (xcopy /Q /E /Y /I ..\..\res ..\..\out\bin\Dist-windows-x86_
     <ClInclude Include="src\Defs.h" />
     <ClInclude Include="src\Enums\Input.h" />
     <ClInclude Include="src\Enums\Messages.h" />
+    <ClInclude Include="src\GameCore\Camera.h" />
     <ClInclude Include="src\GameCore\GameObject.h" />
     <ClInclude Include="src\ModuleSystem\ModuleSystem.h" />
     <ClInclude Include="src\Modules\AssetManager.h" />
@@ -182,6 +183,7 @@ IF EXIST ..\..\res\ (xcopy /Q /E /Y /I ..\..\res ..\..\out\bin\Dist-windows-x86_
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AderEngine.cpp" />
+    <ClCompile Include="src\GameCore\Camera.cpp" />
     <ClCompile Include="src\GameCore\GameObject.cpp" />
     <ClCompile Include="src\ModuleSystem\ModuleSystem.cpp" />
     <ClCompile Include="src\Modules\AssetManager.cpp" />

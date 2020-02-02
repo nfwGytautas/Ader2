@@ -5,6 +5,9 @@
 // Objects array
 #include "GameCore/GameObject.h"
 
+// Camera
+#include "GameCore/Camera.h"
+
 // VAO, Shader
 #include "OpenGLModules/GLContext.h"
 
@@ -83,6 +86,11 @@ public:
     ~AderScene();
 
     /**
+     * Update the scene
+     */
+    void update();
+
+    /**
      * Get the name of the AderScene
      */
     const std::string& getName() const;
@@ -123,6 +131,21 @@ public:
      * Creates a new game object
      */
     GameObject* newGameObject();
+
+    /**
+     * Creates a new camera object
+     */
+    Camera* newCamera();
+
+    /**
+     * Returns the current active camera of the scene
+     */
+    Camera* getActiveCamera();
+
+    /**
+     * Sets the active camera of the scene
+     */
+    void setActiveCamera(Camera* pCamera);
 private:
     /// Class representation of this implementation
     Memory::reference<SharpClass> m_class;
@@ -144,4 +167,10 @@ private:
 
     /// Visuals that belong to this scene
     std::vector<Visual*> m_visuals;
+
+    /// Cameras that belong to this scene
+    std::vector<Camera*> m_cameras;
+
+    /// The current active camera of the scene
+    Camera* m_pActiveCamera;
 };
