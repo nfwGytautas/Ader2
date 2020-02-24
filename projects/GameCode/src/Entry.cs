@@ -93,9 +93,20 @@ namespace Scripts
             Console.WriteLine("Creating camera!");
             Camera camera = this.NewCamera();
             camera.Rotation = new Vector3(0, -90, 0);
-            camera.Position = new Vector3(0, 0, 50);
+            camera.Position = new Vector3(0, 0, 30);
 
             this.ActiveCamera = camera;
+
+            Console.WriteLine("Creating audio!");
+            Audio testAudio = AderAssets.New<Audio>("test_audio");
+
+            testAudio.Source = "res/example_audio.wav";
+            testAudio.Load();
+            testAudio.Pitch = 1.5f;
+            testAudio.Volume = 0.2f;
+            testAudio.Play();
+
+
         }
     }
 

@@ -35,9 +35,16 @@ lib_Glad["dll"] = "Glad.lib"
 lib_GLM = {}
 lib_GLM["include"] = lib_root .. "/glm"
 
--- GLM library variables
+-- stbImage library variables
 lib_stbimage = {}
 lib_stbimage["include"] = lib_root .. "/stbimage"
+
+-- OpenAL library variables
+lib_OpenAL = {}
+lib_OpenAL["include"] = lib_root .. "/OpenAL/include"
+lib_OpenAL["lib"] = lib_root .. "/OpenAL/lib"
+lib_OpenAL["dll"] = "OpenAL32.lib"
+lib_OpenAL["copy_dll"] = "../" .. lib_OpenAL["lib"] .. "/OpenAL32.dll"
 
 -- Add library tables to libraries
 libraries["mono"] = lib_mono
@@ -46,5 +53,6 @@ libraries["GLFW"] = lib_GLFW
 libraries["Glad"] = lib_Glad
 libraries["glm"] = lib_GLM
 libraries["stb_image"] = lib_stbimage
+libraries["OpenAL"] = lib_OpenAL
 
 return libraries

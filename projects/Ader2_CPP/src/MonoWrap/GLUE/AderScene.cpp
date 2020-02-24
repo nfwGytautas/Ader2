@@ -16,6 +16,9 @@ AderScene::AderScene(AderSceneBase* base, Memory::reference<SharpClass> klass)
 
 	// Create _CInstance field
 	m_cInstance = m_class->getField("_CInstance");
+
+	// Create audio listener
+	m_pAudioListener = new AudioListener();
 }
 
 AderScene::~AderScene()
@@ -31,6 +34,9 @@ AderScene::~AderScene()
 	{
 		delete m_cameras[i];
 	}
+
+	// Delete audio listener
+	delete m_pAudioListener;
 }
 
 void AderScene::update()
@@ -135,4 +141,15 @@ Camera* AderScene::getActiveCamera()
 void AderScene::setActiveCamera(Camera* pCamera)
 {
 	m_pActiveCamera = pCamera;
+}
+
+AudioListener* AderScene::setAudioListener()
+{
+	m_pAudioListener->Altered = true;
+	return m_pAudioListener;
+}
+
+AudioListener* AderScene::getAudioListener() const
+{
+	return m_pAudioListener;
 }

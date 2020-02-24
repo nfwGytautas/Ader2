@@ -3,6 +3,9 @@
 // For string
 #include <string>
 
+// For data buffers
+#include <vector>
+
 // Reference
 #include "CommonTypes/reference.h"
 
@@ -41,3 +44,44 @@ public:
  * @return Reference to ImageFileContents
  */
 Memory::reference<ImageFileContents> readImage(const std::string& path);
+
+/**
+ * Struct representing a wave audio file contents
+ */
+struct WaveFileContents
+{
+    /**
+     * Struct representing a wave audio file header
+     */
+    struct WaveFileHeader
+    {
+        char ChunkId[4];
+        unsigned long ChunkSize;
+        char FormatTag[4];
+        char SubChunkId[4];
+        unsigned long SubChunkSize;
+        unsigned short AudioFormat;
+        unsigned short NumChannels;
+        unsigned long SampleRate;
+        unsigned long BytesPerSecond;
+        unsigned short BlockAlign;
+        unsigned short BitsPerSample;
+        char DataChunkId[4];
+        unsigned long DataSize;
+    } Header;
+
+    /// Numeric format representation
+    unsigned int Format;
+
+    /// Actual data buffer
+    std::vector<unsigned char> Data;
+};
+
+/**
+ * Reads wave audio file data from the specified file
+ *
+ * @param path Path to the audio file
+ *
+ * @return Reference to WaveFileContents
+ */
+Memory::reference<WaveFileContents> readAudio(const std::string& path);

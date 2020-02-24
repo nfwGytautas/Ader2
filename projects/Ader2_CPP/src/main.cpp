@@ -4,11 +4,6 @@
 
 #include "Utility/Timer.h"
 
-MonoString* getMessage()
-{
-	return mono_string_new(mono_domain_get(), "Hello, world");
-}
-
 int main()
 {
 	AderEngine aEngine;

@@ -31,6 +31,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AderEngine.h" />
+    <ClInclude Include="src\CommonTypes\Asset.h">
+      <Filter>CommonTypes</Filter>
+    </ClInclude>
     <ClInclude Include="src\CommonTypes\States.h">
       <Filter>CommonTypes</Filter>
     </ClInclude>
@@ -47,13 +50,22 @@
     <ClInclude Include="src\Enums\Messages.h">
       <Filter>Enums</Filter>
     </ClInclude>
+    <ClInclude Include="src\GameCore\Camera.h">
+      <Filter>GameCore</Filter>
+    </ClInclude>
     <ClInclude Include="src\GameCore\GameObject.h">
       <Filter>GameCore</Filter>
     </ClInclude>
     <ClInclude Include="src\ModuleSystem\ModuleSystem.h">
       <Filter>ModuleSystem</Filter>
     </ClInclude>
+    <ClInclude Include="src\Modules\AssetManager.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
     <ClInclude Include="src\Modules\InputInterface.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\PreRender.h">
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\SceneManager.h">
@@ -89,17 +101,26 @@
     <ClInclude Include="src\Utility\Timer.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\Modules\AssetManager.h" />
-    <ClInclude Include="src\CommonTypes\Asset.h" />
-    <ClInclude Include="src\Modules\PreRender.h" />
-    <ClInclude Include="src\GameCore\Camera.h" />
+    <ClInclude Include="src\GameCore\AudioListener.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AderEngine.cpp" />
+    <ClCompile Include="src\GameCore\Camera.cpp">
+      <Filter>GameCore</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameCore\GameObject.cpp">
+      <Filter>GameCore</Filter>
+    </ClCompile>
     <ClCompile Include="src\ModuleSystem\ModuleSystem.cpp">
       <Filter>ModuleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="src\Modules\AssetManager.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
     <ClCompile Include="src\Modules\InputInterface.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\PreRender.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="src\Modules\SceneManager.cpp">
@@ -136,9 +157,5 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Modules\AssetManager.cpp" />
-    <ClCompile Include="src\GameCore\GameObject.cpp" />
-    <ClCompile Include="src\Modules\PreRender.cpp" />
-    <ClCompile Include="src\GameCore\Camera.cpp" />
   </ItemGroup>
 </Project>

@@ -52,10 +52,11 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Core\AderAsset.cs" />
     <Compile Include="src\Core\AderEngine.cs" />
     <Compile Include="src\Core\AssetManager.cs" />
+    <Compile Include="src\Core\Audio.cs" />
     <Compile Include="src\Core\EngineStates.cs" />
-    <Compile Include="src\Core\AderAsset.cs" />
     <Compile Include="src\Core\Math.cs" />
     <Compile Include="src\Core\Shader.cs" />
     <Compile Include="src\Core\Texture.cs" />

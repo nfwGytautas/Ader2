@@ -14,6 +14,9 @@
 // Asset base class
 #include "CommonTypes/Asset.h"
 
+// Audio listener
+#include "GameCore/AudioListener.h"
+
 /**
  * Visual struct is used to define a single way something looks.
  * When creating a GameObject a valid visual must first be created,
@@ -146,6 +149,17 @@ public:
      * Sets the active camera of the scene
      */
     void setActiveCamera(Camera* pCamera);
+
+    /**
+     * Returns this scenes audio listener instance pointer and 
+     * marks it as altered
+     */
+    AudioListener* setAudioListener();
+
+    /**
+     * Returns this scenes audio listener instance pointer
+     */
+    AudioListener* getAudioListener() const;
 private:
     /// Class representation of this implementation
     Memory::reference<SharpClass> m_class;
@@ -173,4 +187,7 @@ private:
 
     /// The current active camera of the scene
     Camera* m_pActiveCamera;
+
+    /// Audio listener of this scene
+    AudioListener* m_pAudioListener = nullptr;
 };

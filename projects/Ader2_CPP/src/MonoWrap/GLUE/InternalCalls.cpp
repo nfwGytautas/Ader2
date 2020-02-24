@@ -198,7 +198,6 @@ void GOsetScale(GameObject* gObject, glm::vec3* value)
 }
 
 
-
 void CameragetPosition(Camera* camera, glm::vec3* value)
 {
 	*value = camera->getPosition();
@@ -217,6 +216,125 @@ void CameragetRotation(Camera* camera, glm::vec3* value)
 void CamerasetRotation(Camera* camera, glm::vec3* value)
 {
 	camera->setRotation(*value);
+}
+
+
+void AudioListenergetPosition(AderScene* scene, glm::vec3* value)
+{
+	*value = scene->getAudioListener()->Position;
+}
+
+void AudioListenersetPosition(AderScene* scene, glm::vec3* value)
+{
+	scene->setAudioListener()->Position = *value;
+}
+
+void AudioListenergetVolume(AderScene* scene, float* value)
+{
+	*value = scene->getAudioListener()->Volume;
+}
+
+void AudioListenersetVolume(AderScene* scene, float* value)
+{
+	scene->setAudioListener()->Volume = *value;
+}
+
+void AudioListenergetOrientationAt(AderScene* scene, glm::vec3* value)
+{
+	*value = scene->getAudioListener()->Orientation.At;
+}
+
+void AudioListenersetOrientationAt(AderScene* scene, glm::vec3* value)
+{
+	scene->setAudioListener()->Orientation.At = *value;
+}
+
+void AudioListenergetOrientationUp(AderScene* scene, glm::vec3* value)
+{
+	*value = scene->getAudioListener()->Orientation.Up;
+}
+
+void AudioListenersetOrientationUp(AderScene* scene, glm::vec3* value)
+{
+	scene->setAudioListener()->Orientation.Up = *value;
+}
+
+
+Audio* Audionew(AssetManager* assetManager, MonoObject* name)
+{
+	std::string assetName = SharpUtility::toString(name);
+	return assetManager->newAsset<Audio>(assetName);
+}
+
+void Audioload(Audio* audio, MonoObject* source)
+{
+	audio->Source = SharpUtility::toString(source);
+	audio->load();
+}
+
+void Audioplay(Audio* audio)
+{
+	audio->start();
+}
+
+void Audiopause(Audio* audio)
+{
+	audio->pause();
+}
+
+void Audiostop(Audio* audio)
+{
+	audio->stop();
+}
+
+void AudiogetPitch(Audio* audio, float* value)
+{
+	*value = audio->getPitch();
+}
+
+void AudiosetPitch(Audio* audio, float* value)
+{
+	audio->setPitch(*value);
+}
+
+void AudiogetVolume(Audio* audio, float* value)
+{
+	*value = audio->getVolume();
+}
+
+void AudiosetVolume(Audio* audio, float* value)
+{
+	audio->setVolume(*value);
+}
+
+void AudiogetPosition(Audio* audio, glm::vec3* value)
+{
+	*value = audio->getPosition();
+}
+
+void AudiosetPosition(Audio* audio, glm::vec3* value)
+{
+	audio->setPosition(*value);
+}
+
+void AudiogetVelocity(Audio* audio, glm::vec3* value)
+{
+	*value = audio->getVelocity();
+}
+
+void AudiosetVelocity(Audio* audio, glm::vec3* value)
+{
+	audio->setVelocity(*value);
+}
+
+void AudiogetLooping(Audio* audio, bool* value)
+{
+	*value = audio->getLooping();
+}
+
+void AudiosetLooping(Audio* audio, bool* value)
+{
+	audio->setLooping(*value);
 }
 
 
@@ -272,4 +390,31 @@ void AderInternals::addInternals()
 	mono_add_internal_call("Ader2.Camera::__setPosition(intptr,Ader2.Core.Vector3&)", CamerasetPosition);
 	mono_add_internal_call("Ader2.Camera::__getRotation(intptr,Ader2.Core.Vector3&)", CameragetRotation);
 	mono_add_internal_call("Ader2.Camera::__setRotation(intptr,Ader2.Core.Vector3&)", CamerasetRotation);
+
+	// Add audio listener internals
+	mono_add_internal_call("Ader2.Core.AudioListener::__getPosition(intptr,Ader2.Core.Vector3&)", AudioListenergetPosition);
+	mono_add_internal_call("Ader2.Core.AudioListener::__setPosition(intptr,Ader2.Core.Vector3&)", AudioListenersetPosition);
+	mono_add_internal_call("Ader2.Core.AudioListener::__getVolume(intptr,single&)", AudioListenergetVolume);
+	mono_add_internal_call("Ader2.Core.AudioListener::__setVolume(intptr,single&)", AudioListenersetVolume);
+	mono_add_internal_call("Ader2.Core.AudioListener::__getOrientationAt(intptr,Ader2.Core.Vector3&)", AudioListenergetOrientationAt);
+	mono_add_internal_call("Ader2.Core.AudioListener::__setOrientationAt(intptr,Ader2.Core.Vector3&)", AudioListenersetOrientationAt);
+	mono_add_internal_call("Ader2.Core.AudioListener::__getOrientationUp(intptr,Ader2.Core.Vector3&)", AudioListenergetOrientationUp);
+	mono_add_internal_call("Ader2.Core.AudioListener::__setOrientationUp(intptr,Ader2.Core.Vector3&)", AudioListenersetOrientationUp);
+
+	// Add audio internals
+	mono_add_internal_call("Ader2.Core.Audio::__new(intptr,string)", Audionew);
+	mono_add_internal_call("Ader2.Core.Audio::__load(intptr,string)", Audioload);
+	mono_add_internal_call("Ader2.Core.Audio::__play(intptr)", Audioplay);
+	mono_add_internal_call("Ader2.Core.Audio::__pause(intptr)", Audiopause);
+	mono_add_internal_call("Ader2.Core.Audio::__stop(intptr)", Audiostop);
+	mono_add_internal_call("Ader2.Core.Audio::__getPitch(intptr,single&)", AudiogetPitch);
+	mono_add_internal_call("Ader2.Core.Audio::__setPitch(intptr,single&)", AudiosetPitch);
+	mono_add_internal_call("Ader2.Core.Audio::__getVolume(intptr,single&)", AudiogetVolume);
+	mono_add_internal_call("Ader2.Core.Audio::__setVolume(intptr,single&)", AudiosetVolume);
+	mono_add_internal_call("Ader2.Core.Audio::__getPosition(intptr,Ader2.Core.Vector3&)", AudiogetPosition);
+	mono_add_internal_call("Ader2.Core.Audio::__setPosition(intptr,Ader2.Core.Vector3&)", AudiosetPosition);
+	mono_add_internal_call("Ader2.Core.Audio::__getVelocity(intptr,Ader2.Core.Vector3&)", AudiogetVelocity);
+	mono_add_internal_call("Ader2.Core.Audio::__setVelocity(intptr,Ader2.Core.Vector3&)", AudiosetVelocity);
+	mono_add_internal_call("Ader2.Core.Audio::__getLooping(intptr,bool&)", AudiogetLooping);
+	mono_add_internal_call("Ader2.Core.Audio::__setLooping(intptr,bool&)", AudiosetLooping);
 }

@@ -28,6 +28,19 @@ void GLContext::shutdown()
     {
         delete m_pubMatrices;
     }
+
+    // Delete audio listener
+    if (m_pAudioListener)
+    {
+        delete m_pAudioListener;
+    }
+
+    // Destroy the context
+    alcMakeContextCurrent(NULL);
+    alcDestroyContext(m_pAudioContext);
+
+    // Close the device
+    alcCloseDevice(m_pAudioDevice);
 }
 
 int GLContext::onMessage(MessageBus::MessageType msg, MessageBus::DataType pData)
@@ -48,6 +61,9 @@ int GLContext::onMessage(MessageBus::MessageType msg, MessageBus::DataType pData
         return render();
     case Messages::msg_SceneChanged:
         changeScene(pData);
+        return 0;
+    case Messages::msg_SystemUpdate:
+        update();
         return 0;
     }
 
@@ -101,11 +117,43 @@ int GLContext::initContext(GLFWwindow* pWindow)
 
     }, 0);
 
+    // Create OpenAL device
+    m_pAudioDevice = alcOpenDevice(NULL);
+
+    // Load ALC function pointers
+    ALboolean enumeration = alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT");
+    if (enumeration == AL_FALSE)
+    {
+        LOG_ERROR("OpenAL alc extension not found!");
+        return 1;
+    }
+    else
+    {
+        // Create context
+        m_pAudioContext = alcCreateContext(m_pAudioDevice, NULL);
+        if (!alcMakeContextCurrent(m_pAudioContext))
+        {
+            LOG_ERROR("OpenAL context initialization failed!");
+        }
+
+        // Reset OpenAL error stack
+        alGetError();
+        ALenum alerror = alGetError();
+        if (alerror != AL_NO_ERROR)
+        {
+            LOG_ERROR("OpenAL error '{0}'!", alerror);
+            return 2;
+        }
+    }
+
     // Set the render target
     m_pRenderTarget = pWindow;
 
     // We can now create our UBO's
     m_pubMatrices = new UniformBuffer(UniformBuffer::bp_Mat);
+
+    // Create new audio listener
+    m_pAudioListener = new AudioListener();
 
     return 0;
 }
@@ -183,6 +231,29 @@ void GLContext::changeScene(MessageBus::DataType pData)
 {
     // Get scene
     m_activeScene = *static_cast<Memory::reference<AderScene>*>(pData);
+    m_pAudioListener = m_activeScene->getAudioListener();
+}
+
+void GLContext::update()
+{
+    if (m_pAudioListener && m_pAudioListener->Altered)
+    {
+        // Set listener position
+        alListener3f(AL_POSITION, 
+            m_pAudioListener->Position.x,
+            m_pAudioListener->Position.y,
+            m_pAudioListener->Position.z);
+
+        // Set volume
+        alListeneri(AL_GAIN, 
+            m_pAudioListener->Volume);
+
+        // Set orientation
+        alListenerfv(AL_ORIENTATION, static_cast<float*>((void*)&m_pAudioListener->Orientation));
+
+        // Set flag
+        m_pAudioListener->Altered = false;
+    }
 }
 
 VAO::VAO()
@@ -657,6 +728,182 @@ void Texture::loadTexture()
 
     // Generate mip maps
     glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+Audio::Audio()
+{
+    // Create source
+    alGenSources((ALuint)1, &m_idSource);
+
+    // Get error
+    alGetError();
+    ALenum alerror = alGetError();
+    if (alerror != AL_NO_ERROR)
+    {
+        LOG_ERROR("OpenAL error '{0}', when creating a source!", alerror);
+    }
+
+    // Set default values
+    setPitch(m_pitch);
+    setVolume(m_volume);
+    setPosition(m_position);
+    setVelocity(m_velocity);
+    setLooping(m_isLooping);
+}
+
+Audio::~Audio()
+{
+    // Free resources
+    deleteAudio();
+}
+
+void Audio::start()
+{
+    if (m_idSource && m_idBuffer)
+    {
+        // Start playing the audio
+        alSourcePlay(m_idSource);
+    }
+}
+
+void Audio::pause()
+{
+    // Pause the audio
+    alSourcePause(m_idSource);
+}
+
+void Audio::stop()
+{
+    // Stop the audio
+    alSourceStop(m_idSource);
+}
+
+void Audio::setPitch(const float& value)
+{
+    // Set the pitch
+    alSourcef(m_idSource, AL_PITCH, value);
+    m_pitch = value;
+}
+
+const float& Audio::getPitch() const
+{
+    return m_pitch;
+}
+
+void Audio::setVolume(const float& value)
+{
+    // Set the volume
+    alSourcef(m_idSource, AL_GAIN, value);
+    m_volume = value;
+}
+
+const float& Audio::getVolume() const
+{
+    return m_volume;
+}
+
+void Audio::setPosition(const glm::vec3& value)
+{
+    // Set the position
+    alSource3f(m_idSource, AL_POSITION, value.x, value.y, value.z);
+    m_position = value;
+}
+
+const glm::vec3& Audio::getPosition() const
+{
+    return m_position;
+}
+
+void Audio::setVelocity(const glm::vec3& value)
+{
+    // Set the velocity
+    alSource3f(m_idSource, AL_VELOCITY, value.x, value.y, value.z);
+    m_velocity = value;
+}
+
+const glm::vec3& Audio::getVelocity() const
+{
+    return m_velocity;
+}
+
+void Audio::setLooping(const bool& value)
+{
+    // Set looping
+    alSourcei(m_idSource, AL_LOOPING, (int)value);
+    m_isLooping = value;
+}
+
+const bool& Audio::getLooping() const
+{
+    return m_isLooping;
+}
+
+void Audio::load()
+{
+    // Delete current texture if it exists
+    deleteBuffer();
+
+    // Load the texture
+    loadBuffer();
+}
+
+void Audio::deleteAudio()
+{
+    // Free source
+    alDeleteSources(1, &m_idSource);
+
+    // Free buffer
+    deleteBuffer();
+}
+
+void Audio::deleteBuffer()
+{
+    if (m_idBuffer)
+    {
+        // Free buffer
+        alDeleteBuffers(1, &m_idBuffer);
+    }
+}
+
+void Audio::loadBuffer()
+{
+    // Load audio
+    Memory::reference<WaveFileContents> wave = readAudio(Source);
+
+    if (!wave.valid())
+    {
+        LOG_WARN("Audio couldn't be created!");
+        return;
+    }
+
+    // Generate buffer
+    alGenBuffers((ALuint)1, &m_idBuffer);
+
+    // Fill buffer data
+    alBufferData(m_idBuffer,
+        wave->Format,
+        wave->Data.data(),
+        wave->Header.DataSize,
+        wave->Header.SampleRate);
+
+    // Check for errors
+    ALenum alerror = alGetError();
+    if (alerror != AL_NO_ERROR)
+    {
+        LOG_ERROR("OpenAL error when filling buffer data!");
+        return;
+    }
+
+    // Set source buffer
+    alSourcei(m_idSource, AL_BUFFER, m_idBuffer);
+
+    // Check for errors
+    alerror = alGetError();
+    if (alerror != AL_NO_ERROR)
+    {
+        LOG_ERROR("OpenAL error when setting source buffer!");
+        return;
+    }
 }
 
 UniformBuffer::UniformBuffer()

@@ -28,7 +28,7 @@ namespace Ader2.Core
         }
 
         /// <summary>
-        /// Loads the shader using the VertexSource and FragmentSource properties
+        /// Loads the texture using the Source property
         /// </summary>
         public void Load()
         {

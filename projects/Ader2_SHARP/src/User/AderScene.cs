@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ader2.Core;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Ader2
@@ -21,6 +22,11 @@ namespace Ader2
     {
         // Instance of the scene object
         private IntPtr _CInstance;
+
+        /// <summary>
+        /// Audio listener of this scene
+        /// </summary>
+        public AudioListener AudioListener { get; private set; }
 
         /// <summary>
         /// Current active camera of this scene
@@ -52,6 +58,14 @@ namespace Ader2
         // Sets the active camera of the scene
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static void __setActiveCamera(IntPtr scene, IntPtr camera);
+
+        /// <summary>
+        /// Create ader scene object
+        /// </summary>
+        public AderScene()
+        {
+            AudioListener = new AudioListener(this);
+        }
 
         /// <summary>
         /// This method should load ALL assets used by the scene

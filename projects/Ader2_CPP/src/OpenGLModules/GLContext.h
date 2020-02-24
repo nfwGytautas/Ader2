@@ -4,9 +4,16 @@
 class VAO;
 class Shader;
 class Texture;
+class Audio;
 class UniformBuffer;
 struct AderScene;
 struct GameObject;
+struct AudioListener;
+
+// GLM
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 // GLContext is part of the module system
 #include "ModuleSystem/ModuleSystem.h"
@@ -14,6 +21,10 @@ struct GameObject;
 // OpenGL includes
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+// OpenAL includes
+#include <AL/al.h>
+#include <AL/alc.h>
 
 // Window state structure
 #include "Modules/InputInterface.h"
@@ -24,10 +35,8 @@ struct GameObject;
 // Graphics types are assets
 #include "CommonTypes/Asset.h"
 
-// GLM
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+// Audio listener
+#include "GameCore/AudioListener.h"
 
 
 /**
@@ -54,6 +63,7 @@ struct RenderSettings
  *  - StateBundleCreated
  *  - WndStateUpdated
  *  - WindowCreated
+ *  - SystemUpdate
  *  - SystemRender
  *  - SceneChanged
  *
@@ -108,9 +118,20 @@ private:
      * Change the current rendering scene to the one provided
      */
     void changeScene(MessageBus::DataType pData);
+
+    /**
+     * Update the context
+     */
+    void update();
 private:
     /// Pointer to the window that the context is rendering to
     GLFWwindow* m_pRenderTarget;
+
+    /// Pointer to OpenAL audio context
+    ALCcontext* m_pAudioContext;
+
+    /// Pointer to OpenAL audio device
+    ALCdevice* m_pAudioDevice;
 
     /// Window state received from the InputInterface
     const WindowState* m_pWndState;
@@ -126,6 +147,9 @@ private:
 
     /// Matrices uniform buffer
     UniformBuffer* m_pubMatrices = nullptr;
+
+    /// Current audio listener
+    AudioListener* m_pAudioListener = nullptr;
 };
 
 
@@ -350,6 +374,132 @@ private:
     void loadTexture();
 private:
     unsigned int m_idTexture = 0;
+};
+
+
+/**
+ * Audio class used to provide sound to the game
+ */
+class Audio : public Asset
+{
+public:
+    /// Source(path to the file) of audio source
+    std::string Source;
+
+    /**
+     * Create Audio
+     */
+    Audio();
+
+    ~Audio();
+
+    /**
+     * Start playing audio if it's loaded
+     */
+    void start();
+
+    /**
+     * Pause audio
+     */
+    void pause();
+
+    /**
+     * Stop playing audio
+     */
+    void stop();
+
+    /**
+     * Set the pitch value for the source
+     *
+     * @param value New pitch value
+     */
+    void setPitch(const float& value);
+
+    /**
+     * Get the pitch of the audio
+     *
+     * @return float representing audio pitch
+     */
+    const float& getPitch() const;
+
+    /**
+     * Set the volume value for the source
+     *
+     * @param value New volume value
+     */
+    void setVolume(const float& value);
+
+    /**
+     * Get the volume of the audio
+     *
+     * @return float representing audio volume
+     */
+    const float& getVolume() const;
+
+    /**
+     * Set the position value for the source
+     *
+     * @param value New position value
+     */
+    void setPosition(const glm::vec3& value);
+
+    /**
+     * Get the position of the audio
+     *
+     * @return glm::vec3 representing the audio position
+     */
+    const glm::vec3& getPosition() const;
+
+    /**
+     * Set the velocity value for the source
+     *
+     * @param value New velocity value
+     */
+    void setVelocity(const glm::vec3& value);
+
+    /**
+     * Get the velocity of the audio
+     *
+     * @return glm::vec3 representing the audio velocity
+     */
+    const glm::vec3& getVelocity() const;
+
+    /**
+     * Set if the source should loop
+     *
+     * @param value True the source will loop
+     */
+    void setLooping(const bool& value);
+
+    /**
+     * Check if the audio is looping
+     *
+     * @return True if the audio is currently in loop mode
+     */
+    const bool& getLooping() const;
+
+    /**
+     * Loads the audio from the source
+     */
+    void load();
+private:
+    // Deletes audio and buffer
+    void deleteAudio();
+
+    // Deletes audio buffer
+    void deleteBuffer();
+
+    // Loads audio buffer
+    void loadBuffer();
+private:
+    unsigned int m_idSource = 0;
+    unsigned int m_idBuffer = 0;
+
+    float m_pitch = 1.0f;
+    float m_volume = 1.0f;
+    glm::vec3 m_position = glm::vec3(0, 0, 0);
+    glm::vec3 m_velocity = glm::vec3(0, 0, 0);
+    bool m_isLooping = false;
 };
 
 

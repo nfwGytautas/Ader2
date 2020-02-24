@@ -40,6 +40,9 @@ project "Ader2_CPP"
 
 		-- STB image
 		engine_paths.lib["stb_image"]["include"],
+
+		-- OpenAL
+		engine_paths.lib["OpenAL"]["include"],
 	}
 
 	libdirs
@@ -55,6 +58,9 @@ project "Ader2_CPP"
 
 		-- Glad
 		engine_paths.lib["Glad"]["lib"],
+
+		-- OpenAL
+		engine_paths.lib["OpenAL"]["lib"],
 	}
 
 	links
@@ -70,6 +76,9 @@ project "Ader2_CPP"
 
 		-- Glad
 		engine_paths.lib["Glad"]["dll"],
+
+		-- OpenAL
+		engine_paths.lib["OpenAL"]["dll"],
 	}
 
 	postbuildcommands 
@@ -85,6 +94,9 @@ project "Ader2_CPP"
 
 		-- res folder
 		("{COPY} " .. "../../res" .. " ../" .. engine_paths.out_target .. "/res"),
+
+		-- OpenAL dll
+		("{COPY} " .. engine_paths.lib["OpenAL"]["copy_dll"] .. " ../" .. engine_paths.out_target .. "/"),
 	}
 
 	filter "system:windows"
