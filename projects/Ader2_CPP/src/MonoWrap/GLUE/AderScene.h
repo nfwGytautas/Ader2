@@ -30,6 +30,9 @@ struct Visual : public Asset
     /// Vector containing transforms of game objects
     std::vector<glm::mat4> Transforms;
 
+    /// Vector containing texture offsets of game objects
+    std::vector<glm::vec2> Offsets;
+
     /**
      * Vector containing true or false that signalizes the engine
      * if the game object should be updated and rendered. This is
@@ -46,7 +49,17 @@ struct Visual : public Asset
     /// Reference to the vertex array of this visual
     VAO* VAO;
 
-    /// Map of textures, key symbolizes the texture slot
+    /** 
+     * This value must show the amount of columns, rows in a 
+     * single texture for this batch
+     */
+    glm::vec2 AtlasDims = glm::vec2(1, 1);
+
+    /**
+     * Map of textures, key symbolizes the texture slot
+     * If these are texture atlases their dimensions must match
+     * since they all share the texture detail atlasRows UBO uniform
+     */
     std::unordered_map<int, Texture*> Textures;
 
     /// Reference to the shader of this visual

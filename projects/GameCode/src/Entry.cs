@@ -23,8 +23,11 @@ namespace Scripts
             //shader.VertexSource = "res/vertex_texture.txt";
             //shader.FragmentSource = "res/fragment_texture.txt";
             
-            shader.VertexSource = "res/vertex_texture_instanced.txt";
-            shader.FragmentSource = "res/fragment_texture_instanced.txt";
+            //shader.VertexSource = "res/vertex_texture_instanced.txt";
+            //shader.FragmentSource = "res/fragment_texture_instanced.txt";
+            
+            shader.VertexSource = "res/vertex_texture_instanced_atlas.txt";
+            shader.FragmentSource = "res/fragment_texture_instanced_atlas.txt";
 
             shader.Load();
 
@@ -66,10 +69,14 @@ namespace Scripts
             Console.WriteLine("Creating texture!");
             Texture tex = AderAssets.New<Texture>("test_texture");
 
-            tex.Source = "res/container.jpg";
+            //tex.Source = "res/container.jpg";
+            tex.Source = "res/atlas.png";
             tex.Load();
 
             vis.SetTexture(0, tex);
+
+            // 3 Columns and 3 Rows
+            vis.Size = new Vector2(3, 3);
 
             Console.WriteLine("Creating game object!");
             int x = 0;
@@ -82,6 +89,8 @@ namespace Scripts
                 go.Visual = vis;
 
                 go.Rotation = new Vector3(0, 0, rnd.Next(360));
+
+                go.TextureOffset = new Vector2(rnd.Next(2), rnd.Next(2));
 
                 if (x % 80 == 0)
                 {

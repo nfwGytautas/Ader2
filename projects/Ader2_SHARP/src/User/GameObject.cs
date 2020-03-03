@@ -78,6 +78,26 @@ namespace Ader2
             }
         }
 
+        /// <summary>
+        /// Texture offset if using an atlas
+        /// if an atlas is not used then this value should be left
+        /// at 0,0 other wise it should be column,row
+        /// </summary>
+        public Vector2 TextureOffset
+        {
+            get
+            {
+                Vector2 value;
+                __getTexOffset(_CInstance, out value);
+                return value;
+            }
+
+            set
+            {
+                __setTexOffset(_CInstance, ref value);
+            }
+        }
+
         // Returns visual of the game object
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static IntPtr __getVisual(IntPtr gObject);
@@ -109,6 +129,14 @@ namespace Ader2
         // Sets the scale of the game object
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static void __setScale(IntPtr gObject, ref Vector3 value);
+
+        // Sets the texture offset of the game object
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static void __getTexOffset(IntPtr gObject, out Vector2 value);
+
+        // Sets the texture offset of the game object
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static void __setTexOffset(IntPtr gObject, ref Vector2 value);
 
 
         public GameObject(IntPtr instance)

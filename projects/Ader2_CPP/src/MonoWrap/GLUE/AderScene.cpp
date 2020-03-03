@@ -36,7 +36,10 @@ AderScene::~AderScene()
 	}
 
 	// Delete audio listener
-	delete m_pAudioListener;
+	if (m_pAudioListener)
+	{
+		delete m_pAudioListener;
+	}
 }
 
 void AderScene::update()

@@ -29,10 +29,9 @@ void GLContext::shutdown()
         delete m_pubMatrices;
     }
 
-    // Delete audio listener
-    if (m_pAudioListener)
+    if (m_pubTextureDetail)
     {
-        delete m_pAudioListener;
+        delete m_pubTextureDetail;
     }
 
     // Destroy the context
@@ -151,6 +150,7 @@ int GLContext::initContext(GLFWwindow* pWindow)
 
     // We can now create our UBO's
     m_pubMatrices = new UniformBuffer(UniformBuffer::bp_Mat);
+    m_pubTextureDetail = new UniformBuffer(UniformBuffer::bp_TexDetail);
 
     // Create new audio listener
     m_pAudioListener = new AudioListener();
@@ -174,13 +174,15 @@ void GLContext::wndResized()
     // Set the view port
     glViewport(0, 0, m_pWndState->width, m_pWndState->height);
 
-    // Recalculate projection matrix
-    m_projection = glm::perspective(
-        glm::radians(m_settings.FoV),
-        (float)m_pWndState->width / (float)m_pWndState->height,
-        m_settings.NearPlane,
-        m_settings.FarPlane);
-
+    if (m_pWndState->width != 0 && m_pWndState->height != 0)
+    {
+        // Recalculate projection matrix
+        m_projection = glm::perspective(
+            glm::radians(m_settings.FoV),
+            (float)m_pWndState->width / (float)m_pWndState->height,
+            m_settings.NearPlane,
+            m_settings.FarPlane);
+    }
 
     // Construct matrices uniform buffer
     m_pubMatrices->bind();
@@ -214,8 +216,17 @@ int GLContext::render()
             it.second->bind(it.first);
         }
 
+        // Bing the texture detail UBO
+        m_pubTextureDetail->bind();
+        
+        // Set the atlas dimensions
+        m_pubTextureDetail->setSubData(0, sizeof(glm::vec2), (void*)glm::value_ptr(visual->AtlasDims));
+
         // Create instance buffer
         visual->VAO->createInstanceBuffer(visual->Transforms, true);
+
+        // Create offset buffer
+        visual->VAO->createOffsetBuffer(visual->Offsets, true);
 
         // Render using instancing
         visual->VAO->renderInstance(visual->RenderCount);
@@ -266,6 +277,7 @@ VAO::VAO()
     m_idVertices.Type = GL_ARRAY_BUFFER;
     m_idTexCoords.Type = GL_ARRAY_BUFFER;
     m_idInstance.Type = GL_ARRAY_BUFFER;
+    m_idOffsets.Type = GL_ARRAY_BUFFER;
 }
 
 VAO::~VAO()
@@ -278,6 +290,7 @@ VAO::~VAO()
     deleteBuffer(m_idVertices);
     deleteBuffer(m_idTexCoords);
     deleteBuffer(m_idInstance);
+    deleteBuffer(m_idOffsets);
 }
 
 void VAO::render()
@@ -404,6 +417,23 @@ void VAO::createInstanceBuffer(std::vector<glm::mat4>& transforms, bool dynamic)
     }
 }
 
+void VAO::createOffsetBuffer(std::vector<glm::vec2>& offsets, bool dynamic)
+{
+    if (setupBuffer(
+        m_idOffsets,
+        dynamic,
+        sizeof(glm::vec2),
+        offsets.size(),
+        offsets.data()))
+    {
+        glEnableVertexAttribArray(al_TexOffset);
+        glVertexAttribPointer(al_TexOffset, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+        
+        // Instances will change the texture atlas
+        glVertexAttribDivisor(al_TexOffset, 1);
+    }
+}
+
 void VAO::bind() const
 {
     ADER_ASSERT(m_idArray != 0, "Trying to bind invalid vertex array");
@@ -428,6 +458,11 @@ void VAO::bind() const
         glEnableVertexAttribArray(al_Instance1);
         glEnableVertexAttribArray(al_Instance2);
         glEnableVertexAttribArray(al_Instance3);
+    }
+
+    if (m_idOffsets.ID)
+    {
+        glEnableVertexAttribArray(al_TexOffset);
     }
 }
 
@@ -976,6 +1011,8 @@ size_t UniformBuffer::getBPSize(BoundPoints bp)
     {
     case bp_Mat:
         return 2 * sizeof(glm::mat4);
+    case bp_TexDetail:
+        return 2 * sizeof(float);
     }
 
     return 0;

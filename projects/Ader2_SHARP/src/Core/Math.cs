@@ -3,6 +3,22 @@
 namespace Ader2.Core
 {
     [StructLayout(LayoutKind.Sequential)]
+    public struct Vector2
+    {
+        public float X;
+        public float Y;
+
+        /// <summary>
+        /// Construct empty Vector2
+        /// </summary>
+        public Vector2(float aX, float aY)
+        {
+            X = aX;
+            Y = aY;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct Vector3
     {
         public float X;

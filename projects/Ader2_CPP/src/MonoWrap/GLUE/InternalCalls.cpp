@@ -91,6 +91,15 @@ Texture* VisualgetTexture(Visual* visual, int slot)
 	return visual->Textures[slot];
 }
 
+void VisualgetSize(Visual* visual, glm::vec2* value)
+{
+	*value = visual->AtlasDims;
+}
+
+void VisualsetSize(Visual* visual, glm::vec2* value)
+{
+	visual->AtlasDims = *value;
+}
 
 
 Shader* Shadernew(AssetManager* assetManager, MonoObject* name)
@@ -195,6 +204,16 @@ void GOgetScale(GameObject* gObject, glm::vec3* value)
 void GOsetScale(GameObject* gObject, glm::vec3* value)
 {
 	gObject->setTransform().Scale = *value;
+}
+
+void GOgetTexOffset(GameObject* gObject, glm::vec2* value)
+{
+	*value = gObject->getTexOffset();
+}
+
+void GOsetTexOffset(GameObject* gObject, glm::vec2* value)
+{
+	gObject->setTexOffset() = *value;
 }
 
 
@@ -348,6 +367,8 @@ void AderInternals::addInternals()
 	mono_add_internal_call("Ader2.Visual::__getVAO(intptr)", VisualgetVAO);
 	mono_add_internal_call("Ader2.Visual::__getShader(intptr)", VisualgetShader);
 	mono_add_internal_call("Ader2.Visual::__getTexture(intptr,int)", VisualgetTexture);
+	mono_add_internal_call("Ader2.Visual::__getSize(intptr,Ader2.Core.Vector2&)", VisualgetSize);
+	mono_add_internal_call("Ader2.Visual::__setSize(intptr,Ader2.Core.Vector2&)", VisualsetSize);
 
 	// Add VAO internals
 	mono_add_internal_call("Ader2.Core.VAO::__new(intptr,string)", VAOnew);
@@ -378,12 +399,12 @@ void AderInternals::addInternals()
 	mono_add_internal_call("Ader2.GameObject::__setVisual(intptr,intptr)", GOsetVisual);
 	mono_add_internal_call("Ader2.GameObject::__getPosition(intptr,Ader2.Core.Vector3&)", GOgetPosition);
 	mono_add_internal_call("Ader2.GameObject::__setPosition(intptr,Ader2.Core.Vector3&)", GOsetPosition);
-
 	mono_add_internal_call("Ader2.GameObject::__getRotation(intptr,Ader2.Core.Vector3&)", GOgetRotation);
 	mono_add_internal_call("Ader2.GameObject::__setRotation(intptr,Ader2.Core.Vector3&)", GOsetRotation);
-
 	mono_add_internal_call("Ader2.GameObject::__getScale(intptr,Ader2.Core.Vector3&)", GOgetScale);
 	mono_add_internal_call("Ader2.GameObject::__setScale(intptr,Ader2.Core.Vector3&)", GOsetScale);
+	mono_add_internal_call("Ader2.GameObject::__getTexOffset(intptr,Ader2.Core.Vector2&)", GOgetTexOffset);
+	mono_add_internal_call("Ader2.GameObject::__setTexOffset(intptr,Ader2.Core.Vector2&)", GOsetTexOffset);
 
 	// Add camera internals
 	mono_add_internal_call("Ader2.Camera::__getPosition(intptr,Ader2.Core.Vector3&)", CameragetPosition);

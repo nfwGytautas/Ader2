@@ -45,13 +45,18 @@ void PreRender::preRender()
 
 		// Update transforms
 		updateTransforms(visual);
+
+		// Update texture offsets
+		updateTexOffsets(visual);
 	}
 }
 
 void PreRender::updateTransforms(Visual* visual)
 {
-	// Clear transforms vector
-	visual->Transforms.clear();
+	if (visual->Transforms.size() <= visual->Objects.size())
+	{
+		visual->Transforms.resize(visual->Objects.size());
+	}
 
 	// Iterate over each game object
 	for (size_t i = 0; i < visual->Objects.size(); i++)
@@ -63,7 +68,30 @@ void PreRender::updateTransforms(Visual* visual)
 			if (visual->Objects[i]->transformChanged())
 			{
 				// Update transformation
-				visual->Transforms.push_back(visual->Objects[i]->getTransformation());
+				visual->Transforms[i] = visual->Objects[i]->getTransformation();
+			}
+		}
+	}
+}
+
+void PreRender::updateTexOffsets(Visual* visual)
+{
+	if (visual->Offsets.size() <= visual->Objects.size())
+	{
+		visual->Offsets.resize(visual->Objects.size());
+	}
+
+	// Iterate over each game object
+	for (size_t i = 0; i < visual->Objects.size(); i++)
+	{
+		// Check if it is in need of updating
+		if (visual->Render[i])
+		{
+			// Check if the transformation needs recalculating
+			if (visual->Objects[i]->offsetChanged())
+			{
+				// Update offset
+				visual->Offsets[i] = visual->Objects[i]->getOffset(visual->AtlasDims);
 			}
 		}
 	}

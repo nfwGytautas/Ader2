@@ -148,6 +148,9 @@ private:
     /// Matrices uniform buffer
     UniformBuffer* m_pubMatrices = nullptr;
 
+    /// Texture detail uniform buffer
+    UniformBuffer* m_pubTextureDetail = nullptr;
+
     /// Current audio listener
     AudioListener* m_pAudioListener = nullptr;
 };
@@ -170,6 +173,9 @@ private:
         al_Instance1 = 4,
         al_Instance2 = 5,
         al_Instance3 = 6,
+
+        // For storing the texture index in an atlas
+        al_TexOffset = 7,
     };
 
     struct VBO
@@ -241,6 +247,15 @@ public:
     void createInstanceBuffer(std::vector<glm::mat4>& transforms, bool dynamic);
 
     /**
+     * Create texture offset data buffer from the specified data
+     *
+     * @param offsets Vector containing offset data
+     * @param dynamic Boolean specifying if the vertices buffer will be changed
+     *                during runtime
+     */
+    void createOffsetBuffer(std::vector<glm::vec2>& offsets, bool dynamic);
+
+    /**
      * Bind this VAO to the current OpenGL state machine.
      */
     void bind() const;
@@ -296,6 +311,7 @@ private:
     VBO m_idVertices;
     VBO m_idTexCoords;
     VBO m_idInstance;
+    VBO m_idOffsets;
 
     unsigned int m_renderCount = 0;
 };
@@ -512,6 +528,7 @@ public:
     enum BoundPoints
     {
         bp_Mat = 0,
+        bp_TexDetail = 1,
     };
 public:
     /**

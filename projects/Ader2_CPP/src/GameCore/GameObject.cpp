@@ -111,3 +111,25 @@ Transform& GameObject::setTransform()
 	m_transformUpdate = true;
 	return m_transform;
 }
+
+const glm::vec2& GameObject::getTexOffset() const
+{
+	return m_texOffset;
+}
+
+glm::vec2& GameObject::setTexOffset()
+{
+	m_offsetUpdate = true;
+	return m_texOffset;
+}
+
+bool GameObject::offsetChanged()
+{
+	return m_offsetUpdate;
+}
+
+const glm::vec2& GameObject::getOffset(const glm::vec2& atlasDims)
+{
+	m_offsetUpdate = false;
+	return glm::vec2(m_texOffset.x, atlasDims.y - 1 - m_texOffset.y) / atlasDims;
+}

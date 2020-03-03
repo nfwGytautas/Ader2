@@ -77,6 +77,29 @@ public:
      * an update even if there were no changes to it
      */
     Transform& setTransform();
+
+    /**
+     * Get offset data, does not flag the game object as needing
+     * an update
+     */
+    const glm::vec2& getTexOffset() const;
+
+    /**
+     * Get offset data reference, does flag the game object as needing
+     * an update even if there were no changes to it
+     */
+    glm::vec2& setTexOffset();
+
+    /**
+     * Returns true if the offset vector changed since the
+     * last call to getTexOffset
+     */
+    bool offsetChanged();
+
+    /**
+     * Get texture offset from the specified atlas dimensions
+     */
+    const glm::vec2& getOffset(const glm::vec2& atlasDims);
 private:
     /// Current visual of the game object
     Visual* m_pVisual = nullptr;
@@ -87,9 +110,18 @@ private:
     /// Transformation data for this game object
     Transform m_transform;
 
+    /// Texture offsets for this game object
+    glm::vec2 m_texOffset = glm::vec2(0, 0);
+
     /**
      * If true then the next time a game object is updated
      * a new transformation will be created
      */
     bool m_transformUpdate = false;
+
+    /**
+     * If true then the next time a game object is updated
+     * a new offset will be created
+     */
+    bool m_offsetUpdate = true;
 };

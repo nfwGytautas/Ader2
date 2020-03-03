@@ -40,6 +40,26 @@ namespace Ader2
         }
 
         /// <summary>
+        /// Size vector is used to determine the amount of columns and rows
+        /// in this visual, if this isn't a texture atlas this should be
+        /// left at the default value of 1,1 otherwise columns,rows
+        /// </summary>
+        public Vector2 Size
+        {
+            get
+            {
+                Vector2 value;
+                __getSize(_CInstance, out value);
+                return value;
+            }
+
+            set
+            {
+                __setSize(_CInstance, ref value);
+            }
+        }
+
+        /// <summary>
         /// Sets the visual texture slot to the specified texture
         /// </summary>
         /// <param name="Slot">Texture slot</param>
@@ -86,6 +106,14 @@ namespace Ader2
         // Returns visual Textures
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static IntPtr __getTexture(IntPtr visual, int slot);
+
+        // Returns the size of the visual
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static void __getSize(IntPtr visual, out Vector2 value);
+
+        // Sets the size of the visual
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static void __setSize(IntPtr visual, ref Vector2 value);
 
         public Visual()
         {

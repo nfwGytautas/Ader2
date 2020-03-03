@@ -45,6 +45,12 @@ private:
      * the specified visual
      */
     void updateTransforms(Visual* visual);
+
+    /**
+     * Updates the texture offset values of the necessary game objects
+     * of the specified visual
+     */
+    void updateTexOffsets(Visual* visual);
 private:
     /// Current scene
     Memory::reference<AderScene> m_currentScene;
