@@ -13,6 +13,9 @@
 // OpenAL includes
 #include <AL/al.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 std::string readFile(const std::string& path)
 {
 	std::string result;
@@ -133,5 +136,128 @@ Memory::reference<WaveFileContents> readAudio(const std::string& path)
 	}
 
 	// Return audio data
+	return result;
+}
+
+Memory::reference<FontFileContents> readFont(const std::string& path)
+{
+	FT_Library  library;   // Handle to library
+	FT_Face     face;      // Handle to face object
+	FT_Error	error;
+
+	Memory::reference<FontFileContents> result = new FontFileContents();
+
+	// Default values
+	result->PixelWidth = 0;
+	result->PixelHeight = 32;
+	result->Width = 128;
+	result->Height = 1;
+
+	// Init FreeType
+	error = FT_Init_FreeType(&library);
+	if (error)
+	{
+		LOG_ERROR("FreeType failed to initialize");
+		FT_Done_FreeType(library);
+		return nullptr;
+	}
+
+	// Create new face from the specified path
+	error = FT_New_Face(library,
+		path.c_str(),
+		0,
+		&face);
+
+	// Check for errors
+	if (error == FT_Err_Unknown_File_Format)
+	{
+		FT_Done_Face(face);
+		FT_Done_FreeType(library);
+
+		LOG_ERROR("The font file could be opened and read, but it appears that its font format is unsupported");
+		return nullptr;
+	}
+	else if (error)
+	{
+		FT_Done_Face(face);
+		FT_Done_FreeType(library);
+
+		LOG_ERROR("The font file could not be opened and read");
+		return nullptr;
+	}
+
+	// Set the size of generated glyph data, resolution could take a parameter but for now it's
+	// enough
+	error = FT_Set_Char_Size(
+		face,							// Handle to face object
+		result->PixelWidth,				// char_width in 1/64th of points
+		result->PixelHeight * 64,		// char_height in 1/64th of points
+		96,								// Horizontal device resolution
+		96);							// Vertical device resolution
+
+	// If any of these values were 0 than the FreeType library set them to the one that isn't 0
+	if (result->PixelWidth == 0)
+	{
+		result->PixelWidth = result->PixelHeight;
+	}
+	else if (result->PixelHeight == 0)
+	{
+		result->PixelHeight = result->PixelWidth;
+	}
+
+	// Additional variables for reserving buffer data and getting width and height correctly
+	int max_dim = (1 + (face->size->metrics.height >> 6))* ceilf(sqrtf(128));
+	int tex_width = 1;
+	while (tex_width < max_dim) tex_width <<= 1;
+	int tex_height = tex_width;
+
+	// Width and height
+	result->Width = tex_width;
+	result->Height = tex_height;
+
+	// Texture buffer
+	result->Buffer = std::vector<unsigned char>(tex_width * tex_height, 0);
+
+	// More variables to help generate text
+	int off = 0;
+	int pen_x = 0, pen_y = 0;
+
+	for (int i = 0; i < 128; ++i)
+	{
+		result->Metrics[i] = {};
+
+		FT_Load_Char(face, i, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | FT_LOAD_TARGET_LIGHT);
+		FT_Bitmap* bmp = &face->glyph->bitmap;
+
+		if (pen_x + bmp->width >= result->Width) {
+			pen_x = 0;
+			pen_y += ((face->size->metrics.height >> 6) + 1);
+		}
+
+		for (int row = 0; row < bmp->rows; ++row) {
+			for (int col = 0; col < bmp->width; ++col) {
+				int x = pen_x + col;
+				int y = pen_y + row;
+				result->Buffer[y * result->Width + x] = bmp->buffer[row * bmp->pitch + col];
+			}
+		}
+
+		result->Metrics[i].Start.x = pen_x;
+		result->Metrics[i].Start.y = pen_y;
+		result->Metrics[i].End.x = pen_x + bmp->width;
+		result->Metrics[i].End.y = pen_y + bmp->rows;
+
+		result->Metrics[i].Offset.x = face->glyph->bitmap_left;
+		result->Metrics[i].Offset.y = face->glyph->bitmap_top;
+		result->Metrics[i].Advance = face->glyph->advance.x >> 6;
+
+		pen_x += bmp->width + 1;
+	}
+
+	// Clean up FreeType
+	FT_Done_Face(face);
+	FT_Done_FreeType(library);
+
+	// Return the result
 	return result;
 }

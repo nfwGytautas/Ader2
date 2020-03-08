@@ -12,6 +12,8 @@
 // Assert
 #include "Defs.h"
 
+#include <thread>
+
 GLContext::GLContext()
 {
 }
@@ -182,13 +184,11 @@ void GLContext::wndResized()
             (float)m_pWndState->width / (float)m_pWndState->height,
             m_settings.NearPlane,
             m_settings.FarPlane);
+
+        // Recalculate orthographic matrix
+        m_orthographic = glm::ortho(0.0f, (float)m_pWndState->width, 
+            0.0f, (float)m_pWndState->height);
     }
-
-    // Construct matrices uniform buffer
-    m_pubMatrices->bind();
-
-    // Set the projection matrix
-    m_pubMatrices->setSubData(0, sizeof(glm::mat4), glm::value_ptr(m_projection));
 }
 
 int GLContext::render()
@@ -199,6 +199,9 @@ int GLContext::render()
 
     // Construct matrices uniform buffer
     m_pubMatrices->bind();
+
+    // Set the projection matrix
+    m_pubMatrices->setSubData(0, sizeof(glm::mat4), glm::value_ptr(m_projection));
 
     // Set the view matrix
     m_pubMatrices->setSubData(sizeof(glm::mat4), sizeof(glm::mat4), (void*)glm::value_ptr(m_activeScene->getActiveCamera()->getViewMatrix()));
@@ -230,6 +233,20 @@ int GLContext::render()
 
         // Render using instancing
         visual->VAO->renderInstance(visual->RenderCount);
+    }
+
+    // Set the orthographic matrix
+    m_pubMatrices->bind();
+    m_pubMatrices->setSubData(0, sizeof(glm::mat4), glm::value_ptr(m_orthographic));
+
+    // Enable blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Loop for each UI(Text) element
+    for (Text* text : m_activeScene->getUI())
+    {
+        text->render();
     }
 
     // Swap window buffers
@@ -689,6 +706,7 @@ void Shader::loadShader()
 
 Texture::Texture()
 {
+    
 }
 
 Texture::~Texture()
@@ -711,6 +729,56 @@ void Texture::load()
 
     // Load the texture
     loadTexture();
+}
+
+void Texture::load(unsigned int width, unsigned int height, unsigned int BPP, std::vector<unsigned char>& data)
+{
+    if (width * height * BPP != data.size())
+    {
+        LOG_ERROR("Texture data and specified parameters do not match!");
+        return;
+    }
+
+    deleteTexture();
+
+    // Generate texture
+    glGenTextures(1, &m_idTexture);
+
+    // Bind the texture
+    glBindTexture(GL_TEXTURE_2D, m_idTexture);
+
+    // Texture parameters
+
+    // Repeat textures when the object is to big
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // Interpolate final color
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Create texture
+    if (BPP == 1)
+    {
+        // Set unpack alignment
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        // Create ALPHA texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data.data());
+    }
+    else if (BPP == 3)
+    {
+        // Create RGB texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data());
+    }
+    else if (BPP == 4)
+    {
+        // Create RGBA texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+    }
+
+    // Generate mip maps
+    glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void Texture::deleteTexture()
@@ -1016,4 +1084,183 @@ size_t UniformBuffer::getBPSize(BoundPoints bp)
     }
 
     return 0;
+}
+
+Text::Text()
+    : m_pTexture(new Texture())
+{
+}
+
+Text::~Text()
+{
+    for (auto& it : m_slots)
+    {
+        if (it.second.pVAO)
+        {
+            delete it.second.pVAO;
+        }
+    }
+}
+
+void Text::render()
+{
+    // Bind texture and shader
+    m_pShader->bind();
+    m_pTexture->bind();
+
+    for (auto& it : m_slots)
+    {
+        Slot& slot = it.second;
+
+        // Check if the slot is visible 
+        if (slot.Visible)
+        {
+            // If needed regenerate the slot VAO
+            if (slot.Regenerate)
+            {
+                // Update slot
+                updateSlot(slot);
+                slot.Regenerate = false;
+            }
+            
+            // Bind and render
+            slot.pVAO->bind();
+            slot.pVAO->render();
+        }
+    }
+}
+
+void Text::load()
+{
+    // Load font
+    Memory::reference<FontFileContents> font = readFont(FontSource);
+
+    if (!font.valid())
+    {
+        LOG_WARN("Font couldn't be created!");
+        return;
+    }
+
+    // Text BPP is 1
+    unsigned int BPP = 1;
+
+    // Create texture
+    m_pTexture->load(font->Width, font->Height, BPP, font->Buffer);
+
+    // Save metrics for later use
+    m_metrics = font->Metrics;
+    m_width = font->Width;
+    m_height = font->Height;
+}
+
+void Text::setShader(Shader* pShader)
+{
+    m_pShader = pShader;
+}
+
+Text::Slot& Text::getSlot(const std::string& name)
+{
+    return m_slots[name];
+}
+
+void Text::updateSlot(Slot& slot)
+{
+    // Final buffers
+    std::vector<float> vertices;
+    std::vector<float> texCoord;
+
+    // Reserve sizes
+    vertices.reserve((slot.Content.length() * 6 * 3));
+    texCoord.reserve((slot.Content.length() * 6 * 2));
+
+    // The height of a single character this must match the one
+    // that was used to load the font file
+    unsigned int charHeight = 32;
+
+    // Initialize the index to the vertex array.
+    int index = 0;
+    float scale = 1;
+
+    // Copy since we use these variables for controlling the pen
+    float x = slot.Position.x;
+    float y = slot.Position.y;
+
+    // Iterate over each text character
+    std::string::const_iterator c;
+    for (c = slot.Content.begin(); c != slot.Content.end(); c++)
+    {
+        // Calculate additional information needed to generate data
+        CharMetric& metrics = m_metrics[*c];
+
+        float xSize = metrics.End.x - metrics.Start.x;
+        float ySize = metrics.End.y - metrics.Start.y;
+
+        float xpos = x + metrics.Offset.x * scale;
+        float ypos = y - (ySize - metrics.Offset.y) * scale;
+
+        float w = xSize * scale;
+        float h = ySize * scale;
+
+
+        // First triangle
+        vertices.push_back(xpos);
+        vertices.push_back(ypos + h);
+        vertices.push_back(1.0f);
+
+        texCoord.push_back(metrics.Start.x / m_width);
+        texCoord.push_back(metrics.Start.y / m_height);
+
+
+        vertices.push_back(xpos + w);
+        vertices.push_back(ypos);
+        vertices.push_back(1.0f);
+
+        texCoord.push_back(metrics.End.x / m_width);
+        texCoord.push_back(metrics.End.y / m_height);
+
+
+        vertices.push_back(xpos);
+        vertices.push_back(ypos);
+        vertices.push_back(1.0f);
+
+        texCoord.push_back(metrics.Start.x / m_width);
+        texCoord.push_back(metrics.End.y / m_height);
+
+
+        // Second triangle in quad.
+        vertices.push_back(xpos);
+        vertices.push_back(ypos + h);
+        vertices.push_back(1.0f);
+
+        texCoord.push_back(metrics.Start.x / m_width);
+        texCoord.push_back(metrics.Start.y / m_height);
+
+
+        vertices.push_back(xpos + w);
+        vertices.push_back(ypos + h);
+        vertices.push_back(1.0f);
+
+        texCoord.push_back(metrics.End.x / m_width);
+        texCoord.push_back(metrics.Start.y / m_height);
+
+
+        vertices.push_back(xpos + w);
+        vertices.push_back(ypos);
+        vertices.push_back(1.0f);
+
+        texCoord.push_back(metrics.End.x / m_width);
+        texCoord.push_back(metrics.End.y / m_height);
+
+        x += metrics.Advance * scale;
+    }
+
+    // Update VAO or create and update if needed
+    if (slot.pVAO == nullptr)
+    {
+        slot.pVAO = new VAO();
+    }
+
+    slot.pVAO->bind();
+    slot.pVAO->createVerticesBuffer(vertices, true);
+    slot.pVAO->createUVBuffer(texCoord, true);
 }

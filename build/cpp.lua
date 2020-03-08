@@ -43,6 +43,9 @@ project "Ader2_CPP"
 
 		-- OpenAL
 		engine_paths.lib["OpenAL"]["include"],
+
+		-- FreeType
+		engine_paths.lib["FreeType"]["include"],
 	}
 
 	libdirs
@@ -61,6 +64,9 @@ project "Ader2_CPP"
 
 		-- OpenAL
 		engine_paths.lib["OpenAL"]["lib"],
+
+		-- FreeType
+		engine_paths.lib["FreeType"]["lib"],
 	}
 
 	links
@@ -79,6 +85,9 @@ project "Ader2_CPP"
 
 		-- OpenAL
 		engine_paths.lib["OpenAL"]["dll"],
+
+		-- FreeType
+		engine_paths.lib["FreeType"]["dll"],
 	}
 
 	postbuildcommands 
@@ -97,6 +106,9 @@ project "Ader2_CPP"
 
 		-- OpenAL dll
 		("{COPY} " .. engine_paths.lib["OpenAL"]["copy_dll"] .. " ../" .. engine_paths.out_target .. "/"),
+
+		-- FreeType dll
+		("{COPY} " .. engine_paths.lib["FreeType"]["copy_dll"] .. " ../" .. engine_paths.out_target .. "/"),
 	}
 
 	filter "system:windows"

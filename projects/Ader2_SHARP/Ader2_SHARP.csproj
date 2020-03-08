@@ -59,6 +59,7 @@
     <Compile Include="src\Core\EngineStates.cs" />
     <Compile Include="src\Core\Math.cs" />
     <Compile Include="src\Core\Shader.cs" />
+    <Compile Include="src\Core\Text.cs" />
     <Compile Include="src\Core\Texture.cs" />
     <Compile Include="src\Core\VAO.cs" />
     <Compile Include="src\User\AderScene.cs" />

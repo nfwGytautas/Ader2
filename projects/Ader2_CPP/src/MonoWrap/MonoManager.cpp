@@ -1118,6 +1118,11 @@ std::string SharpUtility::toString(MonoObject* pObject)
 	return str;
 }
 
+MonoString* SharpUtility::newString(const std::string& value)
+{
+	return mono_string_new_wrapper(value.c_str());
+}
+
 std::string SharpUtility::methodSignature(const std::string& nSpace, const std::string& klass, const std::string& method, const std::string& params, bool isStatic)
 {
 	return 

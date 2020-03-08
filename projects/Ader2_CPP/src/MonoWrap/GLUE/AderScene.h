@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+// Script support
 #include "MonoWrap/MonoManager.h"
 
 // Objects array
@@ -16,6 +19,9 @@
 
 // Audio listener
 #include "GameCore/AudioListener.h"
+
+// Text
+#include "OpenGLModules/GLContext.h"
 
 /**
  * Visual struct is used to define a single way something looks.
@@ -173,6 +179,16 @@ public:
      * Returns this scenes audio listener instance pointer
      */
     AudioListener* getAudioListener() const;
+
+    /**
+     * Returns UI(Text) elements that need to be rendered for this scene
+     */
+    std::vector<Text*> getUI();
+
+    /**
+     * Add UI(Text) element to this scene
+     */
+    void addUI(Text* pText);
 private:
     /// Class representation of this implementation
     Memory::reference<SharpClass> m_class;
@@ -197,6 +213,9 @@ private:
 
     /// Cameras that belong to this scene
     std::vector<Camera*> m_cameras;
+
+    /// Text UI elements
+    std::vector<Text*> m_textAreas;
 
     /// The current active camera of the scene
     Camera* m_pActiveCamera;

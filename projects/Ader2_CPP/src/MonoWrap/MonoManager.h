@@ -887,6 +887,11 @@ public:
     static std::string toString(MonoObject* pObject);
 
     /**
+     * Convert the specified string into a MonoString and return it
+     */
+    static MonoString* newString(const std::string& value);
+
+    /**
      * Create a method signature from namespace, class, method, and signature
      *
      * @param nSpace Namespace of the class method separated in dots e.g. nSpace1.nSpace2

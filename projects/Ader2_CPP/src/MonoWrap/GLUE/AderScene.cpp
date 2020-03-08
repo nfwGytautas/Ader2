@@ -156,3 +156,13 @@ AudioListener* AderScene::getAudioListener() const
 {
 	return m_pAudioListener;
 }
+
+std::vector<Text*> AderScene::getUI()
+{
+	return m_textAreas;
+}
+
+void AderScene::addUI(Text* pText)
+{
+	m_textAreas.push_back(pText);
+}

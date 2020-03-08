@@ -115,7 +115,23 @@ namespace Scripts
             testAudio.Volume = 0.2f;
             testAudio.Play();
 
+            Console.WriteLine("Creating text object!");
+            Shader textShader = AderAssets.New<Shader>("text_shader");
 
+            textShader.VertexSource = "res/vertex_text.txt";
+            textShader.FragmentSource = "res/fragment_text.txt";
+
+            textShader.Load();
+
+            Text testText = AderAssets.New<Text>("test_text");
+            testText.Source = "res/arial.ttf";
+            testText.Load();
+            testText.SetShader(textShader);
+
+            testText["testTextSlot0"].Content = "Test text!";
+            testText["testTextSlot0"].Position = new Vector2(50, 50);
+
+            this.AddUIElement(testText);
         }
     }
 

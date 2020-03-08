@@ -6,6 +6,12 @@
 // For data buffers
 #include <vector>
 
+// For Metrics map
+#include <unordered_map>
+
+// Vectors
+#include <glm/glm.hpp>
+
 // Reference
 #include "CommonTypes/reference.h"
 
@@ -85,3 +91,40 @@ struct WaveFileContents
  * @return Reference to WaveFileContents
  */
 Memory::reference<WaveFileContents> readAudio(const std::string& path);
+
+/**
+ * Char metrics data structure used for specifying individual character attributes
+ */
+struct CharMetric
+{
+    /// Start coordinates of the character in the texture
+    glm::vec2 Start;
+    /// End coordinates of the character in the texture
+    glm::vec2 End;
+    /// Offset from the start of the image
+    glm::vec2 Offset;
+    /// Offset to next glyph
+    int Advance;
+};
+
+/**
+ * Struct containing the loaded font file data
+ */
+struct FontFileContents
+{
+    unsigned int PixelWidth;
+    unsigned int PixelHeight;
+    unsigned int Width;
+    unsigned int Height;
+    std::vector<unsigned char> Buffer;
+    std::unordered_map<char, CharMetric> Metrics;
+};
+
+/**
+ * Reads font data from the specified file
+ *
+ * @param path Path to the font file
+ *
+ * @return Reference to FontFileContents
+ */
+Memory::reference<FontFileContents> readFont(const std::string& path);

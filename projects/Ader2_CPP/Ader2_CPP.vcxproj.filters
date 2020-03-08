@@ -50,6 +50,9 @@
     <ClInclude Include="src\Enums\Messages.h">
       <Filter>Enums</Filter>
     </ClInclude>
+    <ClInclude Include="src\GameCore\AudioListener.h">
+      <Filter>GameCore</Filter>
+    </ClInclude>
     <ClInclude Include="src\GameCore\Camera.h">
       <Filter>GameCore</Filter>
     </ClInclude>
@@ -101,7 +104,6 @@
     <ClInclude Include="src\Utility\Timer.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameCore\AudioListener.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AderEngine.cpp" />

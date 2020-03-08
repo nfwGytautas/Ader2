@@ -59,6 +59,10 @@ namespace Ader2
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern static void __setActiveCamera(IntPtr scene, IntPtr camera);
 
+        // Sets the active camera of the scene
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        extern static void __addText(IntPtr scene, IntPtr text);
+
         /// <summary>
         /// Create ader scene object
         /// </summary>
@@ -92,6 +96,15 @@ namespace Ader2
             // Create a new camera and add it to the scene
             Camera cam = new Camera(__newCamera(_CInstance));
             return cam;
+        }
+
+        /// <summary>
+        /// Add text object to this scene
+        /// </summary>
+        /// <param name="text">Text object to add</param>
+        public void AddUIElement(Text text)
+        {
+            __addText(_CInstance, text._CInstance);
         }
 
         /// <summary>

@@ -5,10 +5,12 @@ class VAO;
 class Shader;
 class Texture;
 class Audio;
+class Text;
 class UniformBuffer;
 struct AderScene;
 struct GameObject;
 struct AudioListener;
+struct CharMetric;
 
 // GLM
 #include <glm/glm.hpp>
@@ -40,7 +42,7 @@ struct AudioListener;
 
 
 /**
- * Rendering settings containing, FoV, near and far plance
+ * Rendering settings containing, FoV, near and far plane
  */
 struct RenderSettings
 {
@@ -141,6 +143,9 @@ private:
 
     /// Current projection matrix of the engine
     glm::mat4 m_projection;
+
+    /// Current orthographic matrix of the engine
+    glm::mat4 m_orthographic;
 
     /// Current rendering settings of the engine
     RenderSettings m_settings;
@@ -382,6 +387,11 @@ public:
      * Loads the texture from the source
      */
     void load();
+
+    /**
+     * Loads the texture from memory
+     */
+    void load(unsigned int width, unsigned int height, unsigned int BPP, std::vector<unsigned char>& data);
 private:
     // Deletes the texture
     void deleteTexture();
@@ -516,6 +526,76 @@ private:
     glm::vec3 m_position = glm::vec3(0, 0, 0);
     glm::vec3 m_velocity = glm::vec3(0, 0, 0);
     bool m_isLooping = false;
+};
+
+
+/**
+ * Text class, this is used to specify text on the screen
+ */
+class Text : public Asset
+{
+public:
+    /// Source(path to the file) of the font file
+    std::string FontSource;
+
+    /**
+     * Slot structure is used to specify a single
+     * text area with it's own content and position
+     */
+    struct Slot
+    {
+        /// Content of this text object
+        std::string Content = "";
+
+        /// Position of this text area
+        glm::vec2 Position;
+
+        /// If false then the Slot will not regenerate and will not be rendered
+        bool Visible = true;
+
+        /// Vertex array generated for this slot
+        VAO* pVAO = nullptr;
+
+        /// If true then this slot VAO will be generated anew
+        bool Regenerate = false;
+    };    
+
+    /**
+     * Create text object
+     */
+    Text();
+
+    ~Text();
+
+    /**
+     * Renders the text to the screen
+     */
+    void render();
+
+    /**
+     * Loads the text from the specified sources
+     */
+    void load();
+
+    /**
+     * Sets the shader to be used for this text object
+     */
+    void setShader(Shader* pShader);
+
+    /**
+     * Get a slot with the specified name, if it doesn't exist
+     * a new slot will be created
+     */
+    Slot& getSlot(const std::string& name);
+private:
+    void updateSlot(Slot& slot);
+private:
+    Texture* m_pTexture = nullptr;
+    Shader* m_pShader = nullptr;
+    std::unordered_map<std::string, Slot> m_slots;
+    std::unordered_map<char, CharMetric> m_metrics;
+    unsigned int m_width;
+    unsigned int m_height;
 };
 
 

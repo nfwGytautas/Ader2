@@ -46,6 +46,13 @@ lib_OpenAL["lib"] = lib_root .. "/OpenAL/lib"
 lib_OpenAL["dll"] = "OpenAL32.lib"
 lib_OpenAL["copy_dll"] = "../" .. lib_OpenAL["lib"] .. "/OpenAL32.dll"
 
+-- FreeType library variables
+lib_FreeType = {}
+lib_FreeType["include"] = lib_root .. "/FreeType/include"
+lib_FreeType["lib"] = lib_root .. "/FreeType/win64"
+lib_FreeType["dll"] = "freetype.lib"
+lib_FreeType["copy_dll"] = "../" .. lib_FreeType["lib"] .. "/freetype.dll"
+
 -- Add library tables to libraries
 libraries["mono"] = lib_mono
 libraries["spdlog"] = lib_spdlog
@@ -54,5 +61,6 @@ libraries["Glad"] = lib_Glad
 libraries["glm"] = lib_GLM
 libraries["stb_image"] = lib_stbimage
 libraries["OpenAL"] = lib_OpenAL
+libraries["FreeType"] = lib_FreeType
 
 return libraries

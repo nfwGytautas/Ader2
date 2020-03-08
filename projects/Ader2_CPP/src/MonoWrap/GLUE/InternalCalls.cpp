@@ -165,6 +165,11 @@ void ScenesetActiveCamera(AderScene* scene, Camera* camera)
 	scene->setActiveCamera(camera);
 }
 
+void SceneaddText(AderScene* scene, Text* text)
+{
+	scene->addUI(text);
+}
+
 
 Visual* GOgetVisual(GameObject* gObject)
 {
@@ -357,6 +362,61 @@ void AudiosetLooping(Audio* audio, bool* value)
 }
 
 
+MonoString* TextSlotgetContent(Text::Slot* slot)
+{
+	return SharpUtility::newString(slot->Content);
+}
+
+void TextSlotsetContent(Text::Slot* slot, MonoObject* value)
+{
+	slot->Content = SharpUtility::toString(value);
+	slot->Regenerate = true;
+}
+
+void TextSlotgetPosition(Text::Slot* slot, glm::vec2* value)
+{
+	*value = slot->Position;
+}
+
+void TextSlotsetPosition(Text::Slot* slot, glm::vec2* value)
+{
+	slot->Position = *value;
+	slot->Regenerate = true;
+}
+
+void TextSlotgetVisible(Text::Slot* slot, bool* value)
+{
+	*value = slot->Visible;
+}
+
+void TextSlotsetVisible(Text::Slot* slot, bool* value)
+{
+	slot->Visible = *value;
+}
+
+Text* Textnew(AssetManager* assetManager, MonoObject* name)
+{
+	std::string assetName = SharpUtility::toString(name);
+	return assetManager->newAsset<Text>(assetName);
+}
+
+void Textload(Text* text, MonoObject* source)
+{
+	text->FontSource = SharpUtility::toString(source);
+	text->load();
+}
+
+void TextsetShader(Text* text, Shader* shader)
+{
+	text->setShader(shader);
+}
+
+Text::Slot* TextgetSlot(Text* text, MonoObject* slot)
+{
+	return &text->getSlot(SharpUtility::toString(slot));
+}
+
+
 void AderInternals::addInternals()
 {
 	// Add visual internals
@@ -393,6 +453,7 @@ void AderInternals::addInternals()
 	mono_add_internal_call("Ader2.AderScene::__newCamera(intptr)", ScenenewCamera);
 	mono_add_internal_call("Ader2.AderScene::__getActiveCamera(intptr)", ScenegetActiveCamera);
 	mono_add_internal_call("Ader2.AderScene::__setActiveCamera(intptr,intptr)", ScenesetActiveCamera);
+	mono_add_internal_call("Ader2.AderScene::__addText(intptr,intptr)", SceneaddText);
 
 	// Add game object internals
 	mono_add_internal_call("Ader2.GameObject::__getVisual(intptr)", GOgetVisual);
@@ -438,4 +499,17 @@ void AderInternals::addInternals()
 	mono_add_internal_call("Ader2.Core.Audio::__setVelocity(intptr,Ader2.Core.Vector3&)", AudiosetVelocity);
 	mono_add_internal_call("Ader2.Core.Audio::__getLooping(intptr,bool&)", AudiogetLooping);
 	mono_add_internal_call("Ader2.Core.Audio::__setLooping(intptr,bool&)", AudiosetLooping);
+
+	// Text and TextSlot
+	mono_add_internal_call("Ader2.Core.TextSlot::__getContent(intptr)", TextSlotgetContent);
+	mono_add_internal_call("Ader2.Core.TextSlot::__setContent(intptr,string)", TextSlotsetContent);
+	mono_add_internal_call("Ader2.Core.TextSlot::__getPosition(intptr,Ader2.Core.Vector2&)", TextSlotgetPosition);
+	mono_add_internal_call("Ader2.Core.TextSlot::__setPosition(intptr,Ader2.Core.Vector2&)", TextSlotsetPosition);
+	mono_add_internal_call("Ader2.Core.TextSlot::__getVisible(intptr,bool&)", TextSlotgetVisible);
+	mono_add_internal_call("Ader2.Core.TextSlot::__setVisible(intptr,bool&)", TextSlotsetVisible);
+
+	mono_add_internal_call("Ader2.Core.Text::__new(intptr,string)", Textnew);
+	mono_add_internal_call("Ader2.Core.Text::__load(intptr,string)", Textload);
+	mono_add_internal_call("Ader2.Core.Text::__setShader(intptr,intptr)", TextsetShader);
+	mono_add_internal_call("Ader2.Core.Text::__getSlot(intptr,string)", TextgetSlot);
 }
